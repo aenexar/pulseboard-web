@@ -419,11 +419,10 @@ export default function HomePage() {
               <Step
                 number="2"
                 title="Initialise in your app entry point"
-                description="Call PulseBoard.init() with your project API key. Auto-capture is enabled by default — no additional setup needed."
+                description="Call PulseBoard.init() with your project API key and environment. App version, build number and device context are read automatically from native modules."
                 code={`PulseBoard.init({
-  host:   'https://your-api.railway.app',
-  apiKey: 'pb_your_project_key',
-  app: { version: '1.0.0', environment: 'production' },
+  apiKey: 'project_api_key',
+  environment: 'production',
 })`}
               />
               <Step
