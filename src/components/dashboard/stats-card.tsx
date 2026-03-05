@@ -18,23 +18,23 @@ export function StatsCard({
   variant = "default",
 }: Props) {
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-slate-400">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
         <Icon
           className={cn(
             "w-4 h-4",
-            variant === "error" && "text-red-400",
-            variant === "success" && "text-emerald-400",
-            variant === "default" && "text-slate-400",
+            variant === "error" && "text-destructive",
+            variant === "success" && "text-brand",
+            variant === "default" && "text-muted-foreground",
           )}
         />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-white">{value}</div>
-        {trend && <p className="text-xs text-slate-500 mt-1">{trend}</p>}
+        <div className="text-2xl font-bold text-foreground">{value}</div>
+        {trend && <p className="text-xs text-muted-foreground mt-1">{trend}</p>}
       </CardContent>
     </Card>
   );

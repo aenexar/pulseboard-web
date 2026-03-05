@@ -21,7 +21,7 @@ export default function DashboardPage() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-32 bg-slate-800" />
+          <Skeleton key={i} className="h-32 bg-accent" />
         ))}
       </div>
     );
@@ -30,8 +30,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400 mt-1">Overview of all your projects</p>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Overview of all your projects
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -62,24 +64,26 @@ export default function DashboardPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Your Projects</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Your Projects
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects?.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="p-4 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors"
+              className="p-4 rounded-lg bg-card border border-border hover:border-border transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-medium text-white">{project.name}</p>
-                  <p className="text-xs text-slate-500 font-mono mt-1">
+                  <p className="font-medium text-foreground">{project.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-1">
                     {project._count?.events ?? 0} events
                   </p>
                 </div>
-                <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1" />
+                <div className="w-2 h-2 rounded-full bg-brand mt-1" />
               </div>
-              <p className="text-xs text-slate-600 font-mono mt-3 truncate">
+              <p className="text-xs text-muted-foreground font-mono mt-3 truncate">
                 {project.apiKey}
               </p>
             </Link>

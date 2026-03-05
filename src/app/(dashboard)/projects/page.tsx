@@ -43,9 +43,9 @@ export default function ProjectsPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48 bg-slate-800" />
+        <Skeleton className="h-8 w-48 bg-accent" />
         {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-32 bg-slate-800" />
+          <Skeleton key={i} className="h-32 bg-accent" />
         ))}
       </div>
     );
@@ -56,8 +56,8 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Projects</h1>
+          <p className="text-muted-foreground mt-1">
             {projects?.length ?? 0} project{projects?.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -69,9 +69,9 @@ export default function ProjectsPage() {
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-slate-900 border-slate-800">
+          <DialogContent className="bg-card border-border">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-foreground">
                 Create a new project
               </DialogTitle>
             </DialogHeader>
@@ -81,7 +81,7 @@ export default function ProjectsPage() {
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
                 autoFocus
               />
               <Button
@@ -99,9 +99,9 @@ export default function ProjectsPage() {
       {/* Empty state */}
       {projects?.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FolderKanban className="w-12 h-12 text-slate-700 mb-4" />
-          <p className="text-slate-400 font-medium">No projects yet</p>
-          <p className="text-slate-600 text-sm mt-1">
+          <FolderKanban className="w-12 h-12 text-muted-foreground/30 mb-4" />
+          <p className="text-muted-foreground font-medium">No projects yet</p>
+          <p className="text-muted-foreground text-sm mt-1">
             Create your first project to start ingesting events
           </p>
         </div>
@@ -112,19 +112,19 @@ export default function ProjectsPage() {
         {projects?.map((project) => (
           <Card
             key={project.id}
-            className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-colors"
+            className="bg-card border-border hover:border-border transition-colors"
           >
             <CardHeader className="flex flex-row items-start justify-between pb-2">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <CardTitle className="text-white text-base">
+                <div className="w-2 h-2 rounded-full bg-brand" />
+                <CardTitle className="text-foreground text-base">
                   {project.name}
                 </CardTitle>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-slate-600 hover:text-red-400 -mt-1 -mr-2"
+                className="text-muted-foreground hover:text-destructive -mt-1 -mr-2"
                 onClick={() => handleDelete(project.id)}
               >
                 <Trash2 className="w-4 h-4" />
@@ -135,21 +135,18 @@ export default function ProjectsPage() {
               <div className="flex items-center justify-between">
                 <Badge
                   variant="outline"
-                  className="text-slate-400 border-slate-700 font-mono text-xs"
+                  className="text-muted-foreground border-border font-mono text-xs"
                 >
                   {project._count?.events ?? 0} events
                 </Badge>
               </div>
 
-              <code className="block text-xs font-mono text-slate-600 truncate">
+              <code className="block text-xs font-mono text-muted-foreground truncate">
                 {project.apiKey}
               </code>
 
               <Link href={`/projects/${project.id}`}>
-                <Button
-                  variant="outline"
-                  className="w-full border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 mt-2"
-                >
+                <Button variant="outline" className="w-full mt-2">
                   View Project
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

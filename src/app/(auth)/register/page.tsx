@@ -25,19 +25,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <Card className="w-full max-w-md bg-slate-900 border-slate-800">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md bg-card border-border">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm font-mono text-emerald-400">
-              PulseBoard
-            </span>
+            <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+            <span className="text-sm font-mono text-brand">PulseBoard</span>
           </div>
-          <CardTitle className="text-2xl text-white">
+          <CardTitle className="text-2xl text-foreground">
             Create an account
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-muted-foreground">
             Start monitoring your apps in minutes
           </CardDescription>
         </CardHeader>
@@ -45,12 +43,12 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {register.error && (
-              <div className="p-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                 Something went wrong. Please try again.
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-300">
+              <Label htmlFor="name" className="text-foreground">
                 Name
               </Label>
               <Input
@@ -58,12 +56,12 @@ export default function RegisterPage() {
                 placeholder="John Doe"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">
+              <Label htmlFor="email" className="text-foreground">
                 Email
               </Label>
               <Input
@@ -72,12 +70,12 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password" className="text-foreground">
                 Password
               </Label>
               <Input
@@ -86,7 +84,7 @@ export default function RegisterPage() {
                 placeholder="Min. 8 characters"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
                 minLength={8}
                 required
               />
@@ -101,9 +99,9 @@ export default function RegisterPage() {
             >
               {register.isPending ? "Creating account..." : "Create account"}
             </Button>
-            <p className="text-sm text-slate-400 text-center">
+            <p className="text-sm text-muted-foreground text-center">
               Already have an account?{" "}
-              <Link href="/login" className="text-emerald-400 hover:underline">
+              <Link href="/login" className="text-brand hover:underline">
                 Sign in
               </Link>
             </p>
