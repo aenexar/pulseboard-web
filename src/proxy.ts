@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/login", "/register"];
-const DEFAULT_LOGIN = "/login";
-const DEFAULT_HOME = "/dashboard";
+const PROTECTED_ROUTES = ["/dashboard", "/projects", "/activity"];
+const AUTH_ROUTES = ["/login", "/register"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("pb_access_token")?.value;
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+  // Protected routes — redirect to login if no token
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route),
   );
-
-  if (!token && !isPublicRoute) {
-    return NextResponse.redirect(new URL(DEFAULT_LOGIN, request.url));
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && isPublicRoute) {
-    return NextResponse.redirect(new URL(DEFAULT_HOME, request.url));
+  // Auth routes — redirect to dashboard if already logged in
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  if (isAuthRoute && token) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
