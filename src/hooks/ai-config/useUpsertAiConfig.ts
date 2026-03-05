@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { AIConfig, ApiResponse, UpsertAIConfigPayload } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useUpsertAIConfig(projectId: string) {
+export function useUpsertAiConfig(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
