@@ -28,6 +28,27 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+// ─── Cooldown derived from aiConfig ──────────────────────────────────────────
+
+const COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
+function getCooldownState(lastTriggeredAt: string | null): {
+  onCooldown: boolean;
+  minutesLeft: number;
+} {
+  if (!lastTriggeredAt) return { onCooldown: false, minutesLeft: 0 };
+
+  const elapsed = Date.now() - new Date(lastTriggeredAt).getTime();
+  const remaining = COOLDOWN_MS - elapsed;
+
+  if (remaining <= 0) return { onCooldown: false, minutesLeft: 0 };
+
+  return {
+    onCooldown: true,
+    minutesLeft: Math.ceil(remaining / 1000 / 60),
+  };
+}
+
 // ─── Severity config ──────────────────────────────────────────────────────────
 
 const SEVERITY_CONFIG: Record<
@@ -149,11 +170,13 @@ function InsightCard({
               </div>
 
               {/* Mark read */}
-              {!insight.isRead && (
+              {insight.isRead ? (
+                <CheckCheck className="w-4 h-4 text-brand shrink-0" />
+              ) : (
                 <button
                   type="button"
                   onClick={() => onMarkRead(insight.id)}
-                  className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                  className="text-muted-foreground hover:text-brand shrink-0 transition-colors"
                   aria-label="Mark as read"
                 >
                   <CheckCheck className="w-4 h-4" />
@@ -277,9 +300,15 @@ export default function InsightsPage() {
 
   // ─── Cooldown state ─────────────────────────────────────────────────
 
-  const cooldownData = triggerInsights.data;
-  const onCooldown = cooldownData?.data?.minutesRemaining !== undefined;
-  const minutesLeft = cooldownData?.data?.minutesRemaining ?? 0;
+  const { onCooldown: initialCooldown, minutesLeft: initialMinutes } =
+    getCooldownState(aiConfig?.lastTriggeredAt ?? null);
+
+  const triggerResponse = triggerInsights.data;
+  const onCooldown =
+    triggerResponse?.data?.minutesRemaining !== undefined
+      ? true
+      : initialCooldown;
+  const minutesLeft = triggerResponse?.data?.minutesRemaining ?? initialMinutes;
 
   return (
     <div className="space-y-8">
@@ -342,7 +371,8 @@ export default function InsightsPage() {
         >
           <Clock className="w-5 h-5 text-yellow-500 shrink-0" />
           <p className="text-sm text-foreground">
-            {triggerInsights.data?.message}
+            {triggerInsights.data?.message ??
+              `Insights were recently generated. You can trigger again in ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}.`}
           </p>
         </div>
       )}
