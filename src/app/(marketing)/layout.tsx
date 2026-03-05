@@ -1,9 +1,10 @@
 "use client";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { SDKDropdown } from "@/components/marketing/sdk-dropdown";
+import { useAuthStore } from "@/store/auth.store";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/auth.store";
 
 export default function MarketingLayout({
   children,
@@ -24,7 +25,7 @@ export default function MarketingLayout({
             </span>
           </Link>
 
-          {/* Nav links */}
+          {/* Nav */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="#features"
@@ -38,12 +39,7 @@ export default function MarketingLayout({
             >
               How it works
             </Link>
-            <Link
-              href="/sdks"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              SDKs
-            </Link>
+            <SDKDropdown />
             <Link
               href="/pricing"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"

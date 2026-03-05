@@ -11,10 +11,12 @@ import {
   ChevronRight,
   Code2,
   Github,
+  Globe,
   MonitorSmartphone,
   Package,
   Shield,
   Sparkles,
+  Terminal,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
@@ -38,13 +40,6 @@ const FAKE_EVENTS = [
   { type: "crash", name: "IllegalStateException", meta: "v2.1.4 · OnePlus 11" },
   { type: "api_call", name: "POST /api/auth/refresh", meta: "89ms · 200" },
 ];
-
-const EVENT_COLORS: Record<string, string> = {
-  crash: "text-destructive",
-  session: "text-brand",
-  api_call: "text-blue-500",
-  screen_view: "text-yellow-500",
-};
 
 const EVENT_BADGES: Record<string, string> = {
   crash: "bg-destructive/10 text-destructive border-destructive/20",
@@ -367,9 +362,27 @@ export default function HomePage() {
             />
             <FeatureCard
               icon={Code2}
-              title="React Native SDK"
-              description="One-line setup. Auto-capture unhandled errors and promise rejections. Native iOS and Android modules for accurate device context."
+              title="Hybrid Mobile SDKs"
+              description="First-class support for React Native CLI and Expo. Flutter, Ionic and Xamarin coming soon — one unified API across all hybrid frameworks."
               accent="bg-destructive/10 text-destructive"
+            />
+            <FeatureCard
+              icon={MonitorSmartphone}
+              title="Native Mobile SDKs"
+              description="Dedicated SDKs for iOS (UIKit & SwiftUI) and Android (View & Jetpack Compose). Deep OS integration for accurate crash context and device signals."
+              accent="bg-blue-500/10 text-blue-500"
+            />
+            <FeatureCard
+              icon={Globe}
+              title="Web SDKs"
+              description="Monitor your web apps with dedicated SDKs for React, Angular and Vue. Same unified dashboard — one place for all your platform observability."
+              accent="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+            />
+            <FeatureCard
+              icon={Terminal}
+              title="Console SDKs"
+              description="Monitor desktop applications on Windows, macOS and Linux. Track crashes, performance and user behaviour across all major desktop platforms."
+              accent="bg-brand/10 text-brand"
             />
           </div>
         </div>
@@ -488,12 +501,6 @@ export default function HomePage() {
                   >
                     Get started for free
                     <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
-                <Link href="https://github.com/aenexar" target="_blank">
-                  <Button size="lg" variant="outline" className="gap-2">
-                    <Github className="w-4 h-4" />
-                    Aenexar on GitHub
                   </Button>
                 </Link>
               </div>
