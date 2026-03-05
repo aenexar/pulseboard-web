@@ -57,7 +57,7 @@ import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const params = useParams();
-  const projectId = params?.projectId as string;
+  const projectId = params?.id as string;
 
   const { data: aiConfig, isLoading } = useAiConfig(projectId);
   const upsertConfig = useUpsertAiConfig(projectId);
