@@ -1,19 +1,25 @@
 import { socketManager } from "@/lib/SocketManager";
 import { PulseEvent } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useRealtimeEvents(projectId: string, maxEvents = 50) {
   const [events, setEvents] = useState<PulseEvent[]>([]);
   const [connected, setConnected] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const connectedRef = useRef(false);
+
+  // Keep ref in sync with state
+  const updateConnected = (value: boolean) => {
+    connectedRef.current = value;
+    setConnected(value);
+  };
 
   useEffect(() => {
     if (!projectId || !enabled) {
-      // Disconnect if disabled
-      if (!enabled && connected) {
+      if (connectedRef.current) {
         socketManager.unsubscribeFromProject(projectId);
         socketManager.disconnect();
-        setTimeout(() => setConnected(false), 0);
+        setTimeout(() => updateConnected(false), 0);
       }
       return;
     }
@@ -21,7 +27,7 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
     socketManager.connect();
 
     const onConnect = () => {
-      setConnected(true);
+      updateConnected(true);
       socketManager.subscribeToProject(projectId);
     };
 
@@ -33,10 +39,10 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
       setEvents((prev) => [data, ...prev].slice(0, maxEvents));
     };
 
-    const onDisconnect = () => setConnected(false);
+    const onDisconnect = () => updateConnected(false);
     const onConnectError = (err: Error) => {
       console.error("[SocketManager] Connection error:", err.message);
-      setConnected(false);
+      updateConnected(false);
     };
 
     socketManager.on("connect", onConnect);
@@ -47,7 +53,7 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
 
     if (socketManager.isConnected) {
       setTimeout(() => {
-        setConnected(true);
+        updateConnected(true);
         socketManager.subscribeToProject(projectId);
       }, 0);
     }
@@ -60,7 +66,7 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
       socketManager.off("disconnect", onDisconnect);
       socketManager.off("connect_error", onConnectError);
       socketManager.disconnect();
-      setConnected(false);
+      updateConnected(false);
     };
   }, [projectId, maxEvents, enabled]);
 
