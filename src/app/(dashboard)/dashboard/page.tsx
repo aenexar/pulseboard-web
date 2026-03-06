@@ -1,6 +1,5 @@
 "use client";
 
-import { useProjects } from "@/hooks/useProjects";
 import {
   Activity,
   FolderKanban,
@@ -10,6 +9,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import Link from "next/link";
+import { useProjects } from "@/hooks";
 
 export default function DashboardPage() {
   const { data: projects, isLoading } = useProjects();

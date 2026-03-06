@@ -1,27 +1,5 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { useAiConfig, useUpsertAiConfig, useDeleteAiConfig } from "@/hooks";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,37 +11,206 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  AIProvider,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  useAiConfig,
+  useDeleteAiConfig,
+  useDeleteProject,
+  useProject,
+  useUpdateProject,
+  useUpdateRepository,
+  useUpsertAiConfig,
+} from "@/hooks";
+import { cn } from "@/lib/utils";
+import {
   AIModel,
-  CronPreset,
-  PROVIDER_MODELS,
-  PROVIDER_LABELS,
-  MODEL_LABELS,
+  AIProvider,
   CRON_PRESET_LABELS,
+  CronPreset,
+  Framework,
+  FRAMEWORK_GROUPS,
+  FRAMEWORK_LABELS,
+  MODEL_LABELS,
+  PROVIDER_LABELS,
+  PROVIDER_MODELS,
+  REPOSITORY_PROVIDER_LABELS,
+  RepositoryProvider,
 } from "@/types";
 import {
-  Brain,
-  Key,
-  Clock,
-  Trash2,
-  Save,
   AlertTriangle,
+  Brain,
   CheckCircle2,
+  Clock,
   Eye,
   EyeOff,
+  FolderGit2,
+  GitBranch,
+  Key,
+  Save,
+  Settings2,
+  Shield,
+  Trash2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function SettingsPage() {
-  const params = useParams();
-  const projectId = params?.id as string;
+// ─── Project Details Tab ──────────────────────────────────────────────────────
 
+function ProjectDetailsTab({ projectId }: { projectId: string }) {
+  const { data: project, isLoading } = useProject(projectId);
+  const updateProject = useUpdateProject(projectId);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [framework, setFramework] = useState<Framework | "">("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!project) return;
+    const t = setTimeout(() => {
+      setName(project.name ?? "");
+      setDescription(project.description ?? "");
+      setFramework((project.framework as Framework) ?? "");
+    }, 0);
+    return () => clearTimeout(t);
+  }, [project]);
+
+  const handleSave = async () => {
+    await updateProject.mutateAsync({
+      name: name.trim(),
+      description: description.trim(),
+      framework: framework || undefined,
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  if (isLoading) return <Skeleton className="h-64" />;
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Settings2 className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-base">Project Details</CardTitle>
+          </div>
+          <CardDescription>
+            Basic information about your project shown across the dashboard.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Name */}
+          <div className="space-y-2">
+            <Label>Project Name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="My Mobile App"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="A short description of what this project monitors..."
+              className="resize-none"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground">
+              Helps AI insights understand the context of your project for more
+              accurate analysis.
+            </p>
+          </div>
+
+          {/* Framework */}
+          <div className="space-y-2">
+            <Label>Framework</Label>
+            <Select
+              value={framework}
+              onValueChange={(v) => setFramework(v as Framework)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select your framework" />
+              </SelectTrigger>
+              <SelectContent>
+                {FRAMEWORK_GROUPS.map((group) => (
+                  <SelectGroup key={group.label}>
+                    <SelectLabel>{group.label}</SelectLabel>
+                    {group.frameworks.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {FRAMEWORK_LABELS[f]}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Used to tailor SDK documentation and insight recommendations.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save */}
+      <div className="flex items-center gap-3">
+        <Button
+          onClick={handleSave}
+          disabled={!name.trim() || updateProject.isPending}
+          className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {updateProject.isPending ? "Saving..." : "Save Changes"}
+        </Button>
+        {saved && (
+          <div className="flex items-center gap-1.5 text-sm text-brand">
+            <CheckCircle2 className="w-4 h-4" />
+            Saved
+          </div>
+        )}
+        {updateProject.isError && (
+          <div className="flex items-center gap-1.5 text-sm text-destructive">
+            <AlertTriangle className="w-4 h-4" />
+            Failed to save
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── AI Config Tab ────────────────────────────────────────────────────────────
+
+function AIConfigTab({ projectId }: { projectId: string }) {
   const { data: aiConfig, isLoading } = useAiConfig(projectId);
   const upsertConfig = useUpsertAiConfig(projectId);
   const deleteConfig = useDeleteAiConfig(projectId);
-
-  // ─── Form state ───────────────────────────────────────────────────────
 
   const [provider, setProvider] = useState<AIProvider>("anthropic");
   const [model, setModel] = useState<AIModel>("claude-sonnet-4-5");
@@ -73,15 +220,11 @@ export default function SettingsPage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // ─── Populate form from existing config ───────────────────────────────
-
   useEffect(() => {
     if (!aiConfig) return;
-
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       setProvider(aiConfig.provider);
       setModel(aiConfig.model);
-
       const isPreset = Object.keys(CRON_PRESET_LABELS).includes(
         aiConfig.cronSchedule,
       );
@@ -92,24 +235,16 @@ export default function SettingsPage() {
         setCronSchedule(aiConfig.cronSchedule);
       }
     }, 0);
-
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [aiConfig]);
 
-  // ─── Reset model when provider changes ────────────────────────────────
-
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       const models = PROVIDER_MODELS[provider];
-      if (!models.includes(model)) {
-        setModel(models[0]);
-      }
+      if (!models.includes(model)) setModel(models[0]);
     }, 0);
-
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [provider, model]);
-
-  // ─── Handlers ─────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     await upsertConfig.mutateAsync({
@@ -119,18 +254,9 @@ export default function SettingsPage() {
       cronPreset,
       cronSchedule: cronPreset === "custom" ? cronSchedule : undefined,
     });
-
     setApiKey("");
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
-  };
-
-  const handleDelete = async () => {
-    await deleteConfig.mutateAsync();
-  };
-
-  const handleProviderChange = (value: AIProvider) => {
-    setProvider(value);
   };
 
   const isValid =
@@ -139,30 +265,12 @@ export default function SettingsPage() {
     apiKey.trim().length > 0 &&
     (cronPreset !== "custom" || cronSchedule.trim().length > 0);
 
-  // ─── Loading ──────────────────────────────────────────────────────────
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-2xl">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64" />
-        <Skeleton className="h-48" />
-      </div>
-    );
-  }
+  if (isLoading) return <Skeleton className="h-64" />;
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure AI provider and insights schedule for this project
-        </p>
-      </div>
-
-      {/* No config banner */}
-      {!aiConfig && (
+    <div className="space-y-6">
+      {/* Status banner */}
+      {!aiConfig ? (
         <div
           className={cn(
             "flex items-start gap-3 p-4 rounded-lg",
@@ -175,15 +283,11 @@ export default function SettingsPage() {
               AI features are disabled
             </p>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Configure your AI provider below to enable crash insights and
-              automated analysis.
+              Configure your AI provider below to enable crash insights.
             </p>
           </div>
         </div>
-      )}
-
-      {/* Current config summary */}
-      {aiConfig && (
+      ) : (
         <div
           className={cn(
             "flex items-start gap-3 p-4 rounded-lg",
@@ -196,8 +300,8 @@ export default function SettingsPage() {
               AI features enabled
             </p>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Using {PROVIDER_LABELS[aiConfig.provider]} —{" "}
-              {MODEL_LABELS[aiConfig.model as AIModel]} · API key ending in{" "}
+              {PROVIDER_LABELS[aiConfig.provider]} —{" "}
+              {MODEL_LABELS[aiConfig.model as AIModel]} · key ending in{" "}
               <code className="font-mono">••••{aiConfig.keyHint}</code>
             </p>
           </div>
@@ -210,7 +314,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* AI Provider Configuration */}
+      {/* Provider */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -218,20 +322,19 @@ export default function SettingsPage() {
             <CardTitle className="text-base">AI Provider</CardTitle>
           </div>
           <CardDescription>
-            Select your AI provider and enter your API key. Keys are encrypted
-            at rest and never returned in full after saving.
+            Keys are encrypted using AES-256-GCM. Only the last 4 characters are
+            shown after saving.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Provider */}
           <div className="space-y-2">
             <Label>Provider</Label>
             <Select
               value={provider}
-              onValueChange={(v) => handleProviderChange(v as AIProvider)}
+              onValueChange={(v) => setProvider(v as AIProvider)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select provider" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {(Object.keys(PROVIDER_LABELS) as AIProvider[]).map((p) => (
@@ -243,12 +346,11 @@ export default function SettingsPage() {
             </Select>
           </div>
 
-          {/* Model */}
           <div className="space-y-2">
             <Label>Model</Label>
             <Select value={model} onValueChange={(v) => setModel(v as AIModel)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select model" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {PROVIDER_MODELS[provider].map((m) => (
@@ -260,7 +362,6 @@ export default function SettingsPage() {
             </Select>
           </div>
 
-          {/* API Key */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Key className="w-3.5 h-3.5" />
@@ -290,15 +391,11 @@ export default function SettingsPage() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Your API key is encrypted using AES-256-GCM before being stored.
-              Only the last 4 characters are shown after saving.
-            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Schedule Configuration */}
+      {/* Schedule */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -306,13 +403,10 @@ export default function SettingsPage() {
             <CardTitle className="text-base">Insights Schedule</CardTitle>
           </div>
           <CardDescription>
-            Choose when AI insights are automatically generated. You can always
-            trigger them manually regardless of schedule. Each run uses your AI
-            provider API credits.
+            Choose when AI insights are automatically generated.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Preset */}
           <div className="space-y-2">
             <Label>Schedule</Label>
             <Select
@@ -320,7 +414,7 @@ export default function SettingsPage() {
               onValueChange={(v) => setCronPreset(v as CronPreset)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select schedule" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {(Object.keys(CRON_PRESET_LABELS) as CronPreset[]).map((p) => (
@@ -332,7 +426,6 @@ export default function SettingsPage() {
             </Select>
           </div>
 
-          {/* Custom cron */}
           {cronPreset === "custom" && (
             <div className="space-y-2">
               <Label>Custom Cron Expression</Label>
@@ -342,10 +435,6 @@ export default function SettingsPage() {
                 onChange={(e) => setCronSchedule(e.target.value)}
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Standard 5-field cron expression. e.g.{" "}
-                <code className="font-mono">0 9 * * *</code> runs at 9am daily.
-              </p>
             </div>
           )}
         </CardContent>
@@ -362,23 +451,14 @@ export default function SettingsPage() {
             <Save className="w-4 h-4 mr-2" />
             {upsertConfig.isPending ? "Saving..." : "Save Configuration"}
           </Button>
-
           {saved && (
             <div className="flex items-center gap-1.5 text-sm text-brand">
               <CheckCircle2 className="w-4 h-4" />
-              Saved successfully
-            </div>
-          )}
-
-          {upsertConfig.isError && (
-            <div className="flex items-center gap-1.5 text-sm text-destructive">
-              <AlertTriangle className="w-4 h-4" />
-              Failed to save — check your inputs
+              Saved
             </div>
           )}
         </div>
 
-        {/* Delete config */}
         {aiConfig && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -394,15 +474,14 @@ export default function SettingsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove AI configuration?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will disable all AI features for this project including
-                  automatic insight generation. Your existing insights will not
-                  be deleted. You can reconfigure at any time.
+                  This will disable all AI features. Existing insights will not
+                  be deleted.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={handleDelete}
+                  onClick={() => deleteConfig.mutate()}
                   className="bg-destructive hover:bg-destructive/90 text-white"
                 >
                   Remove
@@ -412,6 +491,269 @@ export default function SettingsPage() {
           </AlertDialog>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Repository Tab ───────────────────────────────────────────────────────────
+
+function RepositoryTab({ projectId }: { projectId: string }) {
+  const { data: project, isLoading } = useProject(projectId);
+  const updateRepository = useUpdateRepository(projectId);
+
+  const [provider, setProvider] = useState<RepositoryProvider>("github");
+  const [url, setUrl] = useState("");
+  const [branch, setBranch] = useState("main");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!project?.repository) return;
+    const t = setTimeout(() => {
+      setProvider(project.repository!.provider);
+      setUrl(project.repository!.url);
+      setBranch(project.repository!.branch);
+    }, 0);
+    return () => clearTimeout(t);
+  }, [project]);
+
+  const handleSave = async () => {
+    await updateRepository.mutateAsync({ provider, url, branch });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const isValid = url.trim().length > 0 && branch.trim().length > 0;
+
+  if (isLoading) return <Skeleton className="h-64" />;
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <FolderGit2 className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-base">Repository</CardTitle>
+          </div>
+          <CardDescription>
+            Connect your source repository to enable code-level crash analysis
+            in future AI insights.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Provider */}
+          <div className="space-y-2">
+            <Label>Provider</Label>
+            <Select
+              value={provider}
+              onValueChange={(v) => setProvider(v as RepositoryProvider)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(
+                  Object.keys(
+                    REPOSITORY_PROVIDER_LABELS,
+                  ) as RepositoryProvider[]
+                ).map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {REPOSITORY_PROVIDER_LABELS[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* URL */}
+          <div className="space-y-2">
+            <Label>Repository URL</Label>
+            <Input
+              placeholder="https://github.com/yourorg/your-repo"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="font-mono text-sm"
+            />
+          </div>
+
+          {/* Branch */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <GitBranch className="w-3.5 h-3.5" />
+              Default Branch
+            </Label>
+            <Input
+              placeholder="main"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              className="font-mono text-sm"
+            />
+          </div>
+
+          {!project?.repository && (
+            <div
+              className={cn(
+                "flex items-start gap-3 p-4 rounded-lg",
+                "bg-muted border border-border",
+              )}
+            >
+              <FolderGit2 className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  No repository connected
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Connecting your repository will allow AI insights to reference
+                  specific files and line numbers in future crash analysis.
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center gap-3">
+        <Button
+          onClick={handleSave}
+          disabled={!isValid || updateRepository.isPending}
+          className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {updateRepository.isPending ? "Saving..." : "Save Repository"}
+        </Button>
+        {saved && (
+          <div className="flex items-center gap-1.5 text-sm text-brand">
+            <CheckCircle2 className="w-4 h-4" />
+            Saved
+          </div>
+        )}
+        {updateRepository.isError && (
+          <div className="flex items-center gap-1.5 text-sm text-destructive">
+            <AlertTriangle className="w-4 h-4" />
+            Failed to save
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Security Tab ─────────────────────────────────────────────────────────────
+
+function SecurityTab({ projectId }: { projectId: string }) {
+  const router = useRouter();
+  const deleteProject = useDeleteProject(projectId);
+
+  const handleDelete = async () => {
+    await deleteProject.mutateAsync();
+    router.replace("/projects");
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Danger Zone */}
+      <Card className="border-destructive/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-destructive" />
+            <CardTitle className="text-base text-destructive">
+              Danger Zone
+            </CardTitle>
+          </div>
+          <CardDescription>
+            Destructive actions that cannot be undone.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={cn(
+              "flex items-center justify-between p-4 rounded-lg",
+              "border border-destructive/20 bg-destructive/5",
+            )}
+          >
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Delete this project
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Permanently delete this project and all associated data
+                including events, crashes, and insights. This cannot be undone.
+              </p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="shrink-0 ml-4 text-destructive hover:text-destructive hover:bg-destructive/10 border border-destructive/20"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Project
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the project and all its data —
+                    events, crashes, insights and AI configuration. This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive hover:bg-destructive/90 text-white"
+                  >
+                    Delete permanently
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function SettingsPage() {
+  const params = useParams();
+  const projectId = params?.id as string;
+
+  return (
+    <div className="space-y-8 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1">
+          Manage your project configuration
+        </p>
+      </div>
+
+      <Tabs defaultValue="details">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="ai">AI Config</TabsTrigger>
+          <TabsTrigger value="repository">Repository</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <div className="mt-6">
+          <TabsContent value="details">
+            <ProjectDetailsTab projectId={projectId} />
+          </TabsContent>
+          <TabsContent value="ai">
+            <AIConfigTab projectId={projectId} />
+          </TabsContent>
+          <TabsContent value="repository">
+            <RepositoryTab projectId={projectId} />
+          </TabsContent>
+          <TabsContent value="security">
+            <SecurityTab projectId={projectId} />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

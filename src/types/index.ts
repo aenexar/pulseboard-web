@@ -9,6 +9,10 @@ export type Project = {
   name: string;
   apiKey: string;
   userId: string;
+  description: string | null;
+  framework: Framework | null;
+  logoUrl: string | null;
+  repository: Repository | null;
   createdAt: string;
   updatedAt: string;
   _count?: { events: number };
@@ -197,4 +201,83 @@ export const CRON_PRESET_LABELS: Record<CronPreset, string> = {
   "0 */12 * * *": "Every 12 hours",
   "0 9 * * 1": "Weekly (Monday 9:00 AM)",
   custom: "Custom schedule",
+};
+
+// ─── Project Details ──────────────────────────────────────────────────────────
+
+export type Framework =
+  | "react-native-cli"
+  | "react-native-expo"
+  | "flutter"
+  | "ionic"
+  | "xamarin"
+  | "android"
+  | "ios"
+  | "react"
+  | "angular"
+  | "vue"
+  | "nextjs"
+  | "nuxt"
+  | "electron"
+  | "macos"
+  | "windows"
+  | "linux";
+
+export type RepositoryProvider = "github" | "gitlab" | "bitbucket" | "other";
+
+export type Repository = {
+  provider: RepositoryProvider;
+  url: string;
+  branch: string;
+};
+
+export const FRAMEWORK_LABELS: Record<Framework, string> = {
+  "react-native-cli": "React Native CLI",
+  "react-native-expo": "React Native Expo",
+  flutter: "Flutter",
+  ionic: "Ionic",
+  xamarin: "Xamarin",
+  android: "Android",
+  ios: "iOS",
+  react: "React",
+  angular: "Angular",
+  vue: "Vue",
+  nextjs: "Next.js",
+  nuxt: "Nuxt",
+  electron: "Electron",
+  macos: "macOS",
+  windows: "Windows",
+  linux: "Linux",
+};
+
+export const FRAMEWORK_GROUPS: { label: string; frameworks: Framework[] }[] = [
+  {
+    label: "Hybrid Mobile",
+    frameworks: [
+      "react-native-cli",
+      "react-native-expo",
+      "flutter",
+      "ionic",
+      "xamarin",
+    ],
+  },
+  {
+    label: "Native Mobile",
+    frameworks: ["android", "ios"],
+  },
+  {
+    label: "Web",
+    frameworks: ["react", "angular", "vue", "nextjs", "nuxt"],
+  },
+  {
+    label: "Desktop",
+    frameworks: ["electron", "macos", "windows", "linux"],
+  },
+];
+
+export const REPOSITORY_PROVIDER_LABELS: Record<RepositoryProvider, string> = {
+  github: "GitHub",
+  gitlab: "GitLab",
+  bitbucket: "Bitbucket",
+  other: "Other",
 };

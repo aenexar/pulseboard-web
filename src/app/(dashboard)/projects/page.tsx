@@ -1,17 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import {
-  useProjects,
-  useCreateProject,
-  useDeleteProject,
-} from "@/hooks/useProjects";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -19,12 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, ArrowRight, FolderKanban } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCreateProject, useProjects } from "@/hooks";
+import { ArrowRight, FolderKanban, Plus } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function ProjectsPage() {
   const { data: projects, isLoading } = useProjects();
   const createProject = useCreateProject();
-  const deleteProject = useDeleteProject();
   const [newProjectName, setNewProjectName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -33,11 +28,6 @@ export default function ProjectsPage() {
     await createProject.mutateAsync(newProjectName.trim());
     setNewProjectName("");
     setDialogOpen(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
-    await deleteProject.mutateAsync(id);
   };
 
   if (isLoading) {
@@ -121,14 +111,6 @@ export default function ProjectsPage() {
                   {project.name}
                 </CardTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-destructive -mt-1 -mr-2"
-                onClick={() => handleDelete(project.id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
             </CardHeader>
 
             <CardContent className="space-y-4">

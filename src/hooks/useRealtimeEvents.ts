@@ -5,9 +5,18 @@ import { useEffect, useState } from "react";
 export function useRealtimeEvents(projectId: string, maxEvents = 50) {
   const [events, setEvents] = useState<PulseEvent[]>([]);
   const [connected, setConnected] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId || !enabled) {
+      // Disconnect if disabled
+      if (!enabled && connected) {
+        socketManager.unsubscribeFromProject(projectId);
+        socketManager.disconnect();
+        setTimeout(() => setConnected(false), 0);
+      }
+      return;
+    }
 
     socketManager.connect();
 
@@ -25,7 +34,6 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
     };
 
     const onDisconnect = () => setConnected(false);
-
     const onConnectError = (err: Error) => {
       console.error("[SocketManager] Connection error:", err.message);
       setConnected(false);
@@ -52,10 +60,13 @@ export function useRealtimeEvents(projectId: string, maxEvents = 50) {
       socketManager.off("disconnect", onDisconnect);
       socketManager.off("connect_error", onConnectError);
       socketManager.disconnect();
+      setConnected(false);
     };
-  }, [projectId, maxEvents]);
+  }, [projectId, maxEvents, enabled]);
 
   const clearEvents = () => setEvents([]);
+  const start = () => setEnabled(true);
+  const stop = () => setEnabled(false);
 
-  return { events, connected, clearEvents };
+  return { events, connected, enabled, start, stop, clearEvents };
 }
