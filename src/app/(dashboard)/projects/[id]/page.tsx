@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProject } from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
+import { Framework, FRAMEWORK_LABELS } from "@/types";
 import { Copy, Play, Settings, Square, Trash2 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -47,14 +48,30 @@ export default function ProjectPage({
   return (
     <div className="space-y-8">
       {/* Header */}
+      {/* Header */}
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
-          <p className="text-muted-foreground mt-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground">
+              {project.name}
+            </h1>
+            {project.framework && (
+              <Badge variant="outline" className="text-brand border-brand/30">
+                {FRAMEWORK_LABELS[project.framework as Framework] ??
+                  project.framework}
+              </Badge>
+            )}
+          </div>
+          {project.description && (
+            <p className="text-muted-foreground text-sm max-w-xl">
+              {project.description}
+            </p>
+          )}
+          <p className="text-muted-foreground text-sm">
             {project._count?.events ?? 0} total events
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link href={`/projects/${id}/settings`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="w-4 h-4" />

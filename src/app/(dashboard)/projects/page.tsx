@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCreateProject, useProjects } from "@/hooks";
+import { Framework, FRAMEWORK_LABELS } from "@/types";
 import { ArrowRight, FolderKanban, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -114,13 +115,29 @@ export default function ProjectsPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              {/* Description */}
+              {project.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                  {project.description}
+                </p>
+              )}
+
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Badge
                   variant="outline"
                   className="text-muted-foreground border-border font-mono text-xs"
                 >
                   {project._count?.events ?? 0} events
                 </Badge>
+                {project.framework && (
+                  <Badge
+                    variant="outline"
+                    className="text-brand border-brand/30 text-xs"
+                  >
+                    {FRAMEWORK_LABELS[project.framework as Framework] ??
+                      project.framework}
+                  </Badge>
+                )}
               </div>
 
               <code className="block text-xs font-mono text-muted-foreground truncate">
