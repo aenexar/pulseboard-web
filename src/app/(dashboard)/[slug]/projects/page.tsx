@@ -16,27 +16,31 @@ import { useCreateProject, useProjects } from "@/hooks";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
 import { ArrowRight, FolderKanban, Plus } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
 export default function ProjectsPage() {
-  const { data: projects, isLoading } = useProjects();
-  const createProject = useCreateProject();
-  const [newProjectName, setNewProjectName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const params = useParams();
+  const slug = params?.slug as string;
+
+  const { data: projects, isLoading } = useProjects(slug);
+  const createProject = useCreateProject(slug);
+  const [name, setName] = useState("");
+  const [open, setOpen] = useState(false);
 
   const handleCreate = async () => {
-    if (!newProjectName.trim()) return;
-    await createProject.mutateAsync(newProjectName.trim());
-    setNewProjectName("");
-    setDialogOpen(false);
+    if (!name.trim()) return;
+    await createProject.mutateAsync(name.trim());
+    setName("");
+    setOpen(false);
   };
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48 bg-accent" />
+        <Skeleton className="h-8 w-48" />
         {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-32 bg-accent" />
+          <Skeleton key={i} className="h-32" />
         ))}
       </div>
     );
@@ -53,9 +57,9 @@ export default function ProjectsPage() {
           </p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold">
+            <Button className="bg-brand hover:bg-brand/90 text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" />
               New Project
             </Button>
@@ -69,16 +73,16 @@ export default function ProjectsPage() {
             <div className="space-y-4 pt-2">
               <Input
                 placeholder="My Mobile App"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
+                className="bg-accent border-border"
                 autoFocus
               />
               <Button
                 onClick={handleCreate}
-                disabled={!newProjectName.trim() || createProject.isPending}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
+                disabled={!name.trim() || createProject.isPending}
+                className="w-full bg-brand hover:bg-brand/90 text-black font-semibold"
               >
                 {createProject.isPending ? "Creating..." : "Create Project"}
               </Button>
@@ -98,13 +102,10 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* Projects grid */}
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {projects?.map((project) => (
-          <Card
-            key={project.id}
-            className="bg-card border-border hover:border-border transition-colors"
-          >
+          <Card key={project.id} className="bg-card border-border">
             <CardHeader className="flex flex-row items-start justify-between pb-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-brand" />
@@ -113,15 +114,12 @@ export default function ProjectsPage() {
                 </CardTitle>
               </div>
             </CardHeader>
-
             <CardContent className="space-y-4">
-              {/* Description */}
               {project.description && (
                 <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                   {project.description}
                 </p>
               )}
-
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Badge
                   variant="outline"
@@ -139,12 +137,10 @@ export default function ProjectsPage() {
                   </Badge>
                 )}
               </div>
-
               <code className="block text-xs font-mono text-muted-foreground truncate">
                 {project.apiKey}
               </code>
-
-              <Link href={`/projects/${project.id}`}>
+              <Link href={`/${slug}/projects/${project.id}`}>
                 <Button variant="outline" className="w-full mt-2">
                   View Project
                   <ArrowRight className="w-4 h-4 ml-2" />

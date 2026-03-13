@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useLogout } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
+import { useOrganisations } from "@/hooks/organisations/useOrganisations";
+
 import {
   Activity,
   BarChart2,
@@ -16,9 +18,11 @@ import {
   LogOut,
   Lightbulb,
   Settings,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
+import { OrgSwitcher } from "./org-switcher";
 
 // ─── Nav item type ────────────────────────────────────────────────────────────
 
@@ -28,35 +32,37 @@ type NavItem = {
   icon: React.ElementType;
 };
 
-// ─── Global nav ───────────────────────────────────────────────────────────────
+// ─── Nav builders ─────────────────────────────────────────────────────────────
 
-const globalNav: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
-  { href: "/activity", label: "Activity", icon: Activity },
-];
+function globalNav(slug: string): NavItem[] {
+  return [
+    { href: `/${slug}`, label: "Overview", icon: LayoutDashboard },
+    { href: `/${slug}/projects`, label: "Projects", icon: FolderKanban },
+    { href: `/${slug}/activity`, label: "Activity", icon: Activity },
+    { href: `/${slug}/members`, label: "Members", icon: Users },
+    { href: `/${slug}/settings`, label: "Settings", icon: Settings },
+  ];
+}
 
-// ─── Project nav ──────────────────────────────────────────────────────────────
-
-function projectNav(projectId: string): NavItem[] {
+function projectNav(slug: string, projectId: string): NavItem[] {
   return [
     {
-      href: `/projects/${projectId}`,
+      href: `/${slug}/projects/${projectId}`,
       label: "Overview",
       icon: LayoutDashboard,
     },
     {
-      href: `/projects/${projectId}/analytics`,
+      href: `/${slug}/projects/${projectId}/analytics`,
       label: "Analytics",
       icon: BarChart2,
     },
     {
-      href: `/projects/${projectId}/insights`,
+      href: `/${slug}/projects/${projectId}/insights`,
       label: "Insights",
       icon: Lightbulb,
     },
     {
-      href: `/projects/${projectId}/settings`,
+      href: `/${slug}/projects/${projectId}/settings`,
       label: "Settings",
       icon: Settings,
     },
@@ -95,10 +101,17 @@ export function Sidebar() {
   const logout = useLogout();
   const user = useAuthStore((s) => s.user);
 
-  const projectId = params?.projectId as string | undefined;
-  const isProjectView = !!projectId;
+  const { data: orgs } = useOrganisations();
 
-  const navItems = isProjectView ? projectNav(projectId!) : globalNav;
+  const slug = params?.slug as string | undefined;
+  const projectId = params?.id as string | undefined;
+
+  const isProjectView = !!projectId;
+  const currentSlug = slug ?? user?.lastVisitedOrgSlug ?? "";
+
+  const navItems = isProjectView
+    ? projectNav(currentSlug, projectId!)
+    : globalNav(currentSlug);
 
   return (
     <aside
@@ -108,18 +121,15 @@ export function Sidebar() {
         "px-4 py-6",
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2 px-2 mb-8">
-        <div className="w-2 h-2 rounded-full bg-brand animate-pulse shrink-0" />
-        <span className="text-lg font-mono font-bold text-foreground">
-          PulseBoard
-        </span>
+      {/* Org Switcher */}
+      <div className="mb-6">
+        <OrgSwitcher orgs={orgs ?? []} currentSlug={currentSlug} />
       </div>
 
       {/* Back to projects — project view only */}
       {isProjectView && (
         <Link
-          href="/projects"
+          href={`/${currentSlug}/projects`}
           className="flex items-center gap-2 px-3 py-2 mb-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />

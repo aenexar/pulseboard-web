@@ -76,11 +76,17 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// ─── Project Details Tab ──────────────────────────────────────────────────────
+// ─── Details Tab ──────────────────────────────────────────────────────────────
 
-function ProjectDetailsTab({ projectId }: { projectId: string }) {
-  const { data: project, isLoading } = useProject(projectId);
-  const updateProject = useUpdateProject(projectId);
+function ProjectDetailsTab({
+  slug,
+  projectId,
+}: {
+  slug: string;
+  projectId: string;
+}) {
+  const { data: project, isLoading } = useProject(slug, projectId);
+  const updateProject = useUpdateProject(slug, projectId);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -122,7 +128,6 @@ function ProjectDetailsTab({ projectId }: { projectId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Name */}
           <div className="space-y-2">
             <Label>Project Name</Label>
             <Input
@@ -131,8 +136,6 @@ function ProjectDetailsTab({ projectId }: { projectId: string }) {
               placeholder="My Mobile App"
             />
           </div>
-
-          {/* Description */}
           <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
@@ -147,8 +150,6 @@ function ProjectDetailsTab({ projectId }: { projectId: string }) {
               accurate analysis.
             </p>
           </div>
-
-          {/* Framework */}
           <div className="space-y-2">
             <Label>Framework</Label>
             <Select
@@ -177,8 +178,6 @@ function ProjectDetailsTab({ projectId }: { projectId: string }) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Save */}
       <div className="flex items-center gap-3">
         <Button
           onClick={handleSave}
@@ -207,10 +206,10 @@ function ProjectDetailsTab({ projectId }: { projectId: string }) {
 
 // ─── AI Config Tab ────────────────────────────────────────────────────────────
 
-function AIConfigTab({ projectId }: { projectId: string }) {
-  const { data: aiConfig, isLoading } = useAiConfig(projectId);
-  const upsertConfig = useUpsertAiConfig(projectId);
-  const deleteConfig = useDeleteAiConfig(projectId);
+function AIConfigTab({ slug, projectId }: { slug: string; projectId: string }) {
+  const { data: aiConfig, isLoading } = useAiConfig(slug, projectId);
+  const upsertConfig = useUpsertAiConfig(slug, projectId);
+  const deleteConfig = useDeleteAiConfig(slug, projectId);
 
   const [provider, setProvider] = useState<AIProvider>("anthropic");
   const [model, setModel] = useState<AIModel>("claude-sonnet-4-5");
@@ -269,7 +268,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Status banner */}
       {!aiConfig ? (
         <div
           className={cn(
@@ -300,8 +298,8 @@ function AIConfigTab({ projectId }: { projectId: string }) {
               AI features enabled
             </p>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {PROVIDER_LABELS[aiConfig.provider]} —{" "}
-              {MODEL_LABELS[aiConfig.model as AIModel]} · key ending in{" "}
+              {PROVIDER_LABELS[aiConfig.provider]} — {aiConfig.model} · key
+              ending in{" "}
               <code className="font-mono">••••{aiConfig.keyHint}</code>
             </p>
           </div>
@@ -314,7 +312,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      {/* Provider */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -322,8 +319,7 @@ function AIConfigTab({ projectId }: { projectId: string }) {
             <CardTitle className="text-base">AI Provider</CardTitle>
           </div>
           <CardDescription>
-            Keys are encrypted using AES-256-GCM. Only the last 4 characters are
-            shown after saving.
+            Keys are encrypted using AES-256-GCM.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -345,7 +341,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label>Model</Label>
             <Select value={model} onValueChange={(v) => setModel(v as AIModel)}>
@@ -361,7 +356,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Key className="w-3.5 h-3.5" />
@@ -395,7 +389,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
         </CardContent>
       </Card>
 
-      {/* Schedule */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -425,7 +418,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
               </SelectContent>
             </Select>
           </div>
-
           {cronPreset === "custom" && (
             <div className="space-y-2">
               <Label>Custom Cron Expression</Label>
@@ -440,7 +432,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
         </CardContent>
       </Card>
 
-      {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button
@@ -458,7 +449,6 @@ function AIConfigTab({ projectId }: { projectId: string }) {
             </div>
           )}
         </div>
-
         {aiConfig && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -497,9 +487,15 @@ function AIConfigTab({ projectId }: { projectId: string }) {
 
 // ─── Repository Tab ───────────────────────────────────────────────────────────
 
-function RepositoryTab({ projectId }: { projectId: string }) {
-  const { data: project, isLoading } = useProject(projectId);
-  const updateRepository = useUpdateRepository(projectId);
+function RepositoryTab({
+  slug,
+  projectId,
+}: {
+  slug: string;
+  projectId: string;
+}) {
+  const { data: project, isLoading } = useProject(slug, projectId);
+  const updateRepository = useUpdateRepository(slug, projectId);
 
   const [provider, setProvider] = useState<RepositoryProvider>("github");
   const [url, setUrl] = useState("");
@@ -535,12 +531,10 @@ function RepositoryTab({ projectId }: { projectId: string }) {
             <CardTitle className="text-base">Repository</CardTitle>
           </div>
           <CardDescription>
-            Connect your source repository to enable code-level crash analysis
-            in future AI insights.
+            Connect your source repository to enable code-level crash analysis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Provider */}
           <div className="space-y-2">
             <Label>Provider</Label>
             <Select
@@ -563,8 +557,6 @@ function RepositoryTab({ projectId }: { projectId: string }) {
               </SelectContent>
             </Select>
           </div>
-
-          {/* URL */}
           <div className="space-y-2">
             <Label>Repository URL</Label>
             <Input
@@ -574,8 +566,6 @@ function RepositoryTab({ projectId }: { projectId: string }) {
               className="font-mono text-sm"
             />
           </div>
-
-          {/* Branch */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <GitBranch className="w-3.5 h-3.5" />
@@ -588,7 +578,6 @@ function RepositoryTab({ projectId }: { projectId: string }) {
               className="font-mono text-sm"
             />
           </div>
-
           {!project?.repository && (
             <div
               className={cn(
@@ -603,14 +592,13 @@ function RepositoryTab({ projectId }: { projectId: string }) {
                 </p>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Connecting your repository will allow AI insights to reference
-                  specific files and line numbers in future crash analysis.
+                  specific files and line numbers.
                 </p>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-
       <div className="flex items-center gap-3">
         <Button
           onClick={handleSave}
@@ -639,18 +627,17 @@ function RepositoryTab({ projectId }: { projectId: string }) {
 
 // ─── Security Tab ─────────────────────────────────────────────────────────────
 
-function SecurityTab({ projectId }: { projectId: string }) {
+function SecurityTab({ slug, projectId }: { slug: string; projectId: string }) {
   const router = useRouter();
-  const deleteProject = useDeleteProject(projectId);
+  const deleteProject = useDeleteProject(slug, projectId);
 
   const handleDelete = async () => {
     await deleteProject.mutateAsync();
-    router.replace("/projects");
+    router.replace(`/${slug}/projects`);
   };
 
   return (
     <div className="space-y-6">
-      {/* Danger Zone */}
       <Card className="border-destructive/30">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -675,8 +662,8 @@ function SecurityTab({ projectId }: { projectId: string }) {
                 Delete this project
               </p>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Permanently delete this project and all associated data
-                including events, crashes, and insights. This cannot be undone.
+                Permanently delete this project and all associated data. This
+                cannot be undone.
               </p>
             </div>
             <AlertDialog>
@@ -720,6 +707,7 @@ function SecurityTab({ projectId }: { projectId: string }) {
 
 export default function SettingsPage() {
   const params = useParams();
+  const slug = params?.slug as string;
   const projectId = params?.id as string;
 
   return (
@@ -738,19 +726,18 @@ export default function SettingsPage() {
           <TabsTrigger value="repository">Repository</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
-
         <div className="mt-6">
           <TabsContent value="details">
-            <ProjectDetailsTab projectId={projectId} />
+            <ProjectDetailsTab slug={slug} projectId={projectId} />
           </TabsContent>
           <TabsContent value="ai">
-            <AIConfigTab projectId={projectId} />
+            <AIConfigTab slug={slug} projectId={projectId} />
           </TabsContent>
           <TabsContent value="repository">
-            <RepositoryTab projectId={projectId} />
+            <RepositoryTab slug={slug} projectId={projectId} />
           </TabsContent>
           <TabsContent value="security">
-            <SecurityTab projectId={projectId} />
+            <SecurityTab slug={slug} projectId={projectId} />
           </TabsContent>
         </div>
       </Tabs>

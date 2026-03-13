@@ -1,17 +1,15 @@
 "use client";
 
-import React from "react";
-import { useParams } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useInsights,
   useTriggerInsights,
   useMarkInsightRead,
   useAiConfig,
 } from "@/hooks";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Insight, InsightSeverity } from "@/types";
 import {
   AlertTriangle,
@@ -27,29 +25,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import React from "react";
 
-// ─── Cooldown derived from aiConfig ──────────────────────────────────────────
+const COOLDOWN_MS = 60 * 60 * 1000;
 
-const COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
-
-function getCooldownState(lastTriggeredAt: string | null): {
-  onCooldown: boolean;
-  minutesLeft: number;
-} {
+function getCooldownState(lastTriggeredAt: string | null) {
   if (!lastTriggeredAt) return { onCooldown: false, minutesLeft: 0 };
-
   const elapsed = Date.now() - new Date(lastTriggeredAt).getTime();
   const remaining = COOLDOWN_MS - elapsed;
-
   if (remaining <= 0) return { onCooldown: false, minutesLeft: 0 };
-
-  return {
-    onCooldown: true,
-    minutesLeft: Math.ceil(remaining / 1000 / 60),
-  };
+  return { onCooldown: true, minutesLeft: Math.ceil(remaining / 1000 / 60) };
 }
-
-// ─── Severity config ──────────────────────────────────────────────────────────
 
 const SEVERITY_CONFIG: Record<
   InsightSeverity,
@@ -80,8 +67,6 @@ const SEVERITY_CONFIG: Record<
   },
 };
 
-// ─── Category label ───────────────────────────────────────────────────────────
-
 const CATEGORY_LABELS: Record<string, string> = {
   crash: "Crash",
   performance: "Performance",
@@ -89,8 +74,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   release: "Release",
   user_behaviour: "User Behaviour",
 };
-
-// ─── Group insights by day ────────────────────────────────────────────────────
 
 function groupByDay(insights: Insight[]): Record<string, Insight[]> {
   return insights.reduce<Record<string, Insight[]>>((acc, insight) => {
@@ -106,8 +89,6 @@ function groupByDay(insights: Insight[]): Record<string, Insight[]> {
   }, {});
 }
 
-// ─── Insight Card ─────────────────────────────────────────────────────────────
-
 function InsightCard({
   insight,
   onMarkRead,
@@ -117,12 +98,10 @@ function InsightCard({
 }) {
   const severity = SEVERITY_CONFIG[insight.severity];
   const Icon = severity.icon;
-
   const firstSeen = new Date(insight.firstSeenAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
-
   const isRecurring = insight.occurrences > 1;
 
   return (
@@ -134,7 +113,6 @@ function InsightCard({
     >
       <CardContent className="pt-4">
         <div className="flex items-start gap-4">
-          {/* Severity icon */}
           <div
             className={cn(
               "flex items-center justify-center w-8 h-8 rounded-md shrink-0",
@@ -143,8 +121,6 @@ function InsightCard({
           >
             <Icon className="w-4 h-4" />
           </div>
-
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 flex-wrap">
@@ -168,8 +144,6 @@ function InsightCard({
                   {severity.label}
                 </Badge>
               </div>
-
-              {/* Mark read */}
               {insight.isRead ? (
                 <CheckCheck className="w-4 h-4 text-brand shrink-0" />
               ) : (
@@ -183,21 +157,18 @@ function InsightCard({
                 </button>
               )}
             </div>
-
             <p className="text-sm text-muted-foreground mt-1.5">
               {insight.description}
             </p>
-
-            {/* Meta row */}
             <div className="flex items-center gap-4 mt-3">
-              {isRecurring && (
+              {isRecurring ? (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Repeat2 className="w-3 h-3" />
                   Recurring for {insight.occurrences} day
-                  {insight.occurrences !== 1 ? "s" : ""}· First seen {firstSeen}
+                  {insight.occurrences !== 1 ? "s" : ""} · First seen{" "}
+                  {firstSeen}
                 </div>
-              )}
-              {!isRecurring && (
+              ) : (
                 <div className="flex items-center gap-1.5 text-xs text-brand">
                   <Sparkles className="w-3 h-3" />
                   New today
@@ -218,28 +189,17 @@ function InsightCard({
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function InsightsPage() {
   const params = useParams();
-  const projectId = params?.id as string;
+  const slug = params?.slug as string;
+  const id = params?.id as string;
 
-  const { data: insights, isLoading: insightsLoading } = useInsights(projectId);
-  const { data: aiConfig, isLoading: configLoading } = useAiConfig(projectId);
-  const triggerInsights = useTriggerInsights(projectId);
-  const markRead = useMarkInsightRead(projectId);
+  const { data: insights, isLoading: insightsLoading } = useInsights(slug, id);
+  const { data: aiConfig, isLoading: configLoading } = useAiConfig(slug, id);
+  const triggerInsights = useTriggerInsights(slug, id);
+  const markRead = useMarkInsightRead(slug, id);
 
   const isLoading = insightsLoading || configLoading;
-
-  const handleTrigger = async () => {
-    await triggerInsights.mutateAsync();
-  };
-
-  const handleMarkRead = async (insightId: string) => {
-    await markRead.mutateAsync(insightId);
-  };
-
-  // ─── Loading ────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -253,8 +213,6 @@ export default function InsightsPage() {
     );
   }
 
-  // ─── No AI config ───────────────────────────────────────────────────
-
   if (!aiConfig) {
     return (
       <div className="space-y-6">
@@ -264,7 +222,6 @@ export default function InsightsPage() {
             AI-powered analysis of your app&apos;s health
           </p>
         </div>
-
         <div
           className={cn(
             "flex flex-col items-center justify-center py-24 gap-4 rounded-lg",
@@ -282,7 +239,7 @@ export default function InsightsPage() {
               Configure your AI provider to start generating insights
             </p>
           </div>
-          <Link href={`/projects/${projectId}/settings`}>
+          <Link href={`/${slug}/projects/${id}/settings`}>
             <Button variant="outline" className="mt-2">
               <Settings className="w-4 h-4 mr-2" />
               Go to Settings
@@ -298,8 +255,6 @@ export default function InsightsPage() {
   const unreadCount = insights?.filter((i) => !i.isRead).length ?? 0;
   const totalCount = insights?.length ?? 0;
 
-  // ─── Cooldown state ─────────────────────────────────────────────────
-
   const { onCooldown: initialCooldown, minutesLeft: initialMinutes } =
     getCooldownState(aiConfig?.lastTriggeredAt ?? null);
 
@@ -312,7 +267,6 @@ export default function InsightsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Insights</h1>
@@ -322,7 +276,6 @@ export default function InsightsPage() {
               : `${totalCount} insight${totalCount !== 1 ? "s" : ""} · ${unreadCount} unread`}
           </p>
         </div>
-
         <div className="flex items-center gap-3">
           {onCooldown && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -331,7 +284,7 @@ export default function InsightsPage() {
             </div>
           )}
           <Button
-            onClick={handleTrigger}
+            onClick={() => triggerInsights.mutateAsync()}
             disabled={triggerInsights.isPending || onCooldown}
             variant="outline"
           >
@@ -346,7 +299,6 @@ export default function InsightsPage() {
         </div>
       </div>
 
-      {/* Success banner after trigger */}
       {triggerInsights.isSuccess && !onCooldown && (
         <div
           className={cn(
@@ -361,7 +313,6 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* Cooldown banner */}
       {onCooldown && (
         <div
           className={cn(
@@ -377,7 +328,6 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* Empty state */}
       {totalCount === 0 && (
         <div
           className={cn(
@@ -397,10 +347,8 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* Timeline */}
       {days.map((day) => (
         <div key={day} className="space-y-3">
-          {/* Day header */}
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-muted-foreground">
               {day}
@@ -411,14 +359,12 @@ export default function InsightsPage() {
               {grouped[day].length !== 1 ? "s" : ""}
             </span>
           </div>
-
-          {/* Insight cards */}
           <div className="space-y-3">
             {grouped[day].map((insight) => (
               <InsightCard
                 key={insight.id}
                 insight={insight}
-                onMarkRead={handleMarkRead}
+                onMarkRead={(id) => markRead.mutateAsync(id)}
               />
             ))}
           </div>

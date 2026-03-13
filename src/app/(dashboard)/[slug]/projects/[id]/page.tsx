@@ -10,16 +10,15 @@ import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
 import { Copy, Play, Settings, Square, Trash2 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 
-export default function ProjectPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = React.use(params);
+export default function ProjectPage() {
+  const params = useParams();
+  const slug = params?.slug as string;
+  const id = params?.id as string;
 
-  const { data: project, isLoading } = useProject(id);
+  const { data: project, isLoading } = useProject(slug, id);
   const { events, connected, enabled, start, stop, clearEvents } =
     useRealtimeEvents(id);
   const [copied, setCopied] = useState(false);
@@ -48,7 +47,6 @@ export default function ProjectPage({
   return (
     <div className="space-y-8">
       {/* Header */}
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -72,7 +70,7 @@ export default function ProjectPage({
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/projects/${id}/settings`}>
+          <Link href={`/${slug}/projects/${id}/settings`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="w-4 h-4" />
               Settings
@@ -123,7 +121,6 @@ export default function ProjectPage({
               </div>
             )}
           </div>
-
           <div className="flex items-center gap-2">
             {enabled && (
               <Button
@@ -162,7 +159,6 @@ export default function ProjectPage({
           </div>
         </div>
 
-        {/* Idle state */}
         {!enabled && (
           <div
             className={cn(

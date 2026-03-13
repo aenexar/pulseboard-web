@@ -68,8 +68,6 @@ function StatCard({
   );
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────────
-
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div>
@@ -78,8 +76,6 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
     </div>
   );
 }
-
-// ─── Bar Row ──────────────────────────────────────────────────────────────────
 
 function BarRow({
   label,
@@ -95,7 +91,6 @@ function BarRow({
   badge?: React.ReactNode;
 }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
@@ -119,11 +114,10 @@ function BarRow({
 
 export default function AnalyticsPage() {
   const params = useParams();
-  const projectId = params?.id as string;
+  const slug = params?.slug as string;
+  const id = params?.id as string;
 
-  const { data, isLoading } = useAnalytics(projectId);
-
-  console.log({ projectId, data });
+  const { data, isLoading } = useAnalytics(slug, id);
 
   if (isLoading) {
     return (
@@ -176,7 +170,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-10">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
         <p className="text-muted-foreground mt-1">
@@ -229,7 +222,6 @@ export default function AnalyticsPage() {
           title="Top Crashes"
           sub="Most frequently occurring errors — last 30 days"
         />
-
         {topCrashes.length === 0 ? (
           <div
             className={cn(
@@ -295,9 +287,8 @@ export default function AnalyticsPage() {
         )}
       </div>
 
-      {/* Two column breakdown */}
+      {/* Breakdowns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Crashes by Version */}
         <div className="space-y-4">
           <SectionHeader
             title="By Version"
@@ -324,7 +315,6 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* Crashes by Device */}
         <div className="space-y-4">
           <SectionHeader
             title="By Device"
@@ -354,7 +344,6 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* API Performance */}
         <div className="space-y-4">
           <SectionHeader
             title="API Performance"
@@ -384,7 +373,6 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* Screen Performance */}
         <div className="space-y-4">
           <SectionHeader
             title="Screen Performance"
