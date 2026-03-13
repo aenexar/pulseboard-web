@@ -14,9 +14,9 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const login = useLogin();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -103,5 +103,13 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
