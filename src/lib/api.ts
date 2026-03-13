@@ -47,7 +47,9 @@ api.interceptors.response.use(
 
         return api(original);
       } catch {
-        Cookies.remove(TOKEN_KEY);
+        // Import clearAuth from the store and call it here
+        const { useAuthStore } = await import("@/store/auth.store");
+        useAuthStore.getState().clearAuth();
         window.location.href = "/login";
       }
     }
