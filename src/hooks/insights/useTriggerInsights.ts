@@ -1,29 +1,24 @@
-import { api } from "@/lib/api";
-import { TriggerInsightsResponse } from "@/types";
+import { api, projectRoutes } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export function useTriggerInsights(projectId: string) {
+export function useTriggerInsights(slug: string, projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
-      try {
-        const { data } = await api.post<TriggerInsightsResponse>(
-          `/projects/${projectId}/insights/trigger`,
-        );
-        return data;
-      } catch (error: unknown) {
-        // 429 — return the response data so the UI can read minutesRemaining
-        if (axios.isAxiosError(error) && error.response?.status === 429) {
-          return error.response.data as TriggerInsightsResponse;
-        }
-        throw error;
-      }
+      const res = await api.post(projectRoutes.trigger(slug, projectId), {});
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["insights", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["ai-config", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["insights", slug, projectId],
+      });
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        return error.response.data;
+      }
     },
   });
 }

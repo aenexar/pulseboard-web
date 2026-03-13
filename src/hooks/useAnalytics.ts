@@ -1,16 +1,14 @@
-import { api } from "@/lib/api";
-import { AnalyticsData, ApiResponse } from "@/types";
+import { api, projectRoutes } from "@/lib/api";
+import { AnalyticsData } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useAnalytics(projectId: string) {
-  return useQuery({
-    queryKey: ["analytics", projectId],
+export function useAnalytics(slug: string, projectId: string) {
+  return useQuery<AnalyticsData>({
+    queryKey: ["analytics", slug, projectId],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<AnalyticsData>>(
-        `/projects/${projectId}/analytics`,
-      );
-      return data.data;
+      const res = await api.get(projectRoutes.analytics(slug, projectId));
+      return res.data.data;
     },
-    enabled: !!projectId,
+    enabled: !!slug && !!projectId,
   });
 }

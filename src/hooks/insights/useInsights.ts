@@ -1,16 +1,14 @@
-import { api } from "@/lib/api";
-import { ApiResponse, Insight } from "@/types";
+import { api, projectRoutes } from "@/lib/api";
+import { Insight } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useInsights(projectId: string) {
-  return useQuery({
-    queryKey: ["insights", projectId],
+export function useInsights(slug: string, projectId: string) {
+  return useQuery<Insight[]>({
+    queryKey: ["insights", slug, projectId],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Insight[]>>(
-        `/projects/${projectId}/insights`,
-      );
-      return data.data;
+      const res = await api.get(projectRoutes.insights(slug, projectId));
+      return res.data.data;
     },
-    enabled: !!projectId,
+    enabled: !!slug && !!projectId,
   });
 }

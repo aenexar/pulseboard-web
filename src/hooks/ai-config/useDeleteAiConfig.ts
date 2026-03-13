@@ -1,16 +1,17 @@
-import { api } from "@/lib/api";
+import { api, projectRoutes } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useDeleteAiConfig(projectId: string) {
+export function useDeleteAiConfig(slug: string, projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
-      await api.delete(`/projects/${projectId}/ai-config`);
+      await api.delete(projectRoutes.aiConfig(slug, projectId));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["ai-config", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["insights", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["ai-config", slug, projectId],
+      });
     },
   });
 }
