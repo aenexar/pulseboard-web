@@ -1,5 +1,6 @@
 "use client";
 
+import { NewsletterSection } from "@/components/marketing/newsletters-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -466,6 +467,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Newsletter ──────────────────────────────────────────────── */}
+      <NewsletterSection />
+
       {/* ── CTA ─────────────────────────────────────────────────────── */}
       <section className="py-24 border-t border-border bg-muted/30">
         <div className="max-w-6xl mx-auto px-6">
@@ -539,6 +543,24 @@ export default function HomePage() {
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               GitHub
+            </Link>
+            <Link
+              href="/terms-and-conditions"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy-policy"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/support"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Support
             </Link>
           </div>
 
