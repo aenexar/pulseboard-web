@@ -13,15 +13,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRegister } from "@/hooks";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function RegisterPage() {
   const register = useRegister();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    register.mutate(form);
+    register.mutate(form, {
+      onSuccess: () => {
+        router.replace(from ?? "/dashboard");
+      },
+    });
   };
 
   return (
@@ -92,7 +101,12 @@ export default function RegisterPage() {
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               Already have an account?{" "}
-              <Link href="/login" className="text-brand hover:underline">
+              <Link
+                href={
+                  from ? `/login?from=${encodeURIComponent(from)}` : "/login"
+                }
+                className="text-brand hover:underline"
+              >
                 Sign in
               </Link>
             </p>

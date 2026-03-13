@@ -104,3 +104,8 @@ export const projectRoutes = {
   aiConfig: (slug: string, id: string) =>
     `/organisations/${slug}/projects/${id}/ai-config`,
 };
+
+export const billingRoutes = {
+  checkout: (slug: string) => `/billing/${slug}/checkout`,
+  portal: (slug: string) => `/billing/${slug}/portal`,
+};

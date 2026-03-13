@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import { Organisation } from "@/types";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, Plus, Building2 } from "lucide-react";
+import { Organisation } from "@/types";
+import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   orgs: Organisation[];
@@ -17,8 +16,6 @@ export function OrgSwitcher({ orgs, currentSlug }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
-  const setAuth = useAuthStore((s) => s.setAuth);
 
   const currentOrg = orgs.find((o) => o.slug === currentSlug);
 
@@ -34,18 +31,17 @@ export function OrgSwitcher({ orgs, currentSlug }: Props) {
   }, []);
 
   async function switchOrg(slug: string) {
+    if (slug === currentSlug) {
+      setOpen(false);
+      return;
+    }
+
     setOpen(false);
 
-    // Update lastVisitedOrgSlug on backend
     try {
       await api.patch("/auth/last-org", { slug });
     } catch {
       // Non-critical — proceed anyway
-    }
-
-    // Update local user state
-    if (user) {
-      setAuth({ ...user, lastVisitedOrgSlug: slug }, "");
     }
 
     router.push(`/${slug}`);

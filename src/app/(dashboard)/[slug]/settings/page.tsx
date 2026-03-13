@@ -28,17 +28,21 @@ import {
   useOrganisation,
   useUpdateOrganisation,
 } from "@/hooks";
+import { useCreateCheckout } from "@/hooks/billing/useCreateCheckout";
+import { useCreatePortal } from "@/hooks/billing/useCreatePortal";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import {
   AlertTriangle,
+  Badge,
   Building2,
+  CheckCircle,
   CheckCircle2,
   Save,
   Shield,
   Trash2,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // ─── General Tab ──────────────────────────────────────────────────────────────
@@ -148,7 +152,6 @@ function GeneralTab({ slug }: { slug: string }) {
 function DangerTab({ slug }: { slug: string }) {
   const router = useRouter();
   const deleteOrg = useDeleteOrganisation(slug);
-  const user = useAuthStore((s) => s.user);
 
   const handleDelete = async () => {
     await deleteOrg.mutateAsync();
@@ -222,6 +225,150 @@ function DangerTab({ slug }: { slug: string }) {
   );
 }
 
+// ─── Billing Tab ──────────────────────────────────────────────────────────────
+
+function BillingTab({ slug }: { slug: string }) {
+  const { data: org } = useOrganisation(slug);
+  const searchParams = useSearchParams();
+  const justUpgraded = searchParams.get("success") === "true";
+
+  const checkout = useCreateCheckout(slug);
+  const portal = useCreatePortal(slug);
+
+  const plan = org?.plan ?? "free";
+
+  return (
+    <div className="space-y-6">
+      {/* Success banner */}
+      {justUpgraded && (
+        <div
+          className={cn(
+            "flex items-center gap-3 p-4 rounded-lg",
+            "bg-brand/10 border border-brand/20",
+          )}
+        >
+          <CheckCircle className="w-5 h-5 text-brand shrink-0" />
+          <p className="text-sm text-foreground font-medium">
+            You&apos;re now on PulseBoard Pro — welcome to the club!
+          </p>
+        </div>
+      )}
+
+      {/* Current plan */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-base">Current Plan</CardTitle>
+          </div>
+          <CardDescription>
+            Your organisation&apos;s active subscription.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={cn(
+              "flex items-center justify-between p-4 rounded-lg",
+              "border border-border bg-muted/30",
+            )}
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-foreground capitalize">
+                  {plan} Plan
+                </p>
+                <Badge
+                  className={cn(
+                    "text-xs capitalize",
+                    plan === "pro" && "text-brand border-brand/30 bg-brand/10",
+                    plan === "enterprise" &&
+                      "text-yellow-500 border-yellow-500/30 bg-yellow-500/10",
+                    plan === "free" && "text-muted-foreground border-border",
+                  )}
+                >
+                  {plan}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {plan === "free" &&
+                  "1 project · 1,000 events/month · manual insights only"}
+                {plan === "pro" &&
+                  "Unlimited projects · 100,000 events/month · scheduled AI insights"}
+                {plan === "enterprise" &&
+                  "Unlimited everything · custom retention · dedicated support"}
+              </p>
+            </div>
+
+            {plan === "free" && (
+              <Button
+                onClick={() => checkout.mutate()}
+                disabled={checkout.isPending}
+                className="bg-brand hover:bg-brand/90 text-black font-semibold shrink-0 ml-4"
+              >
+                {checkout.isPending ? "Redirecting..." : "Upgrade to Pro"}
+              </Button>
+            )}
+
+            {plan === "pro" && (
+              <Button
+                variant="outline"
+                onClick={() => portal.mutate()}
+                disabled={portal.isPending}
+                className="shrink-0 ml-4"
+              >
+                {portal.isPending ? "Redirecting..." : "Manage Subscription"}
+              </Button>
+            )}
+
+            {plan === "enterprise" && (
+              <a href="mailto:hello@pulseboard.app">
+                <Button variant="outline" className="shrink-0 ml-4">
+                  Contact us
+                </Button>
+              </a>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Feature comparison */}
+      {plan === "free" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              What you&apos;ll unlock with Pro
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {[
+              "Unlimited projects",
+              "100,000 events per month",
+              "30-day data retention",
+              "Scheduled AI insights",
+              "All AI providers (Anthropic, OpenAI, Google, Moonshot)",
+              "Priority support",
+            ].map((feature) => (
+              <div key={feature} className="flex items-center gap-2.5">
+                <CheckCircle className="w-4 h-4 text-brand shrink-0" />
+                <span className="text-sm text-muted-foreground">{feature}</span>
+              </div>
+            ))}
+            <div className="pt-4">
+              <Button
+                onClick={() => checkout.mutate()}
+                disabled={checkout.isPending}
+                className="bg-brand hover:bg-brand/90 text-black font-semibold"
+              >
+                {checkout.isPending ? "Redirecting..." : "Upgrade to Pro"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrgSettingsPage() {
@@ -245,8 +392,9 @@ export default function OrgSettingsPage() {
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid grid-cols-2 w-48">
+        <TabsList className="grid grid-cols-3 w-64">
           <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
           <TabsTrigger value="danger" disabled={!isOwner}>
             Danger
           </TabsTrigger>
@@ -254,6 +402,9 @@ export default function OrgSettingsPage() {
         <div className="mt-6">
           <TabsContent value="general">
             <GeneralTab slug={slug} />
+          </TabsContent>
+          <TabsContent value="billing">
+            <BillingTab slug={slug} />
           </TabsContent>
           <TabsContent value="danger">
             <DangerTab slug={slug} />

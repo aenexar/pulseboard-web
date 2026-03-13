@@ -16,6 +16,12 @@ import { AlertTriangle, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+function isAxiosError(
+  err: unknown,
+): err is { response: { data: { message: string } } } {
+  return typeof err === "object" && err !== null && "response" in err;
+}
+
 export default function NewOrganisationPage() {
   const router = useRouter();
   const createOrg = useCreateOrganisation();
@@ -32,8 +38,9 @@ export default function NewOrganisationPage() {
       const org = await createOrg.mutateAsync({ name: trimmed });
       router.replace(`/${org.slug}`);
     } catch (err: unknown) {
-      const msg =
-        err?.response?.data?.message ?? "Failed to create organisation.";
+      const msg = isAxiosError(err)
+        ? err.response.data.message
+        : "Failed to create organisation.";
       setError(msg);
     }
   };
