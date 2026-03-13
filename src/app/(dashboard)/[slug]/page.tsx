@@ -1,6 +1,7 @@
 "use client";
 
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { FrameworkIcon } from "@/components/framework-icons";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrganisation, useProjects } from "@/hooks";
@@ -131,32 +132,35 @@ export default function OrgOverviewPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {project.framework && (
+                      <FrameworkIcon
+                        framework={project.framework as Framework}
+                        size={16}
+                        className="shrink-0"
+                      />
+                    )}
                     <p className="font-medium text-foreground truncate">
                       {project.name}
                     </p>
-                    {project.framework && (
-                      <Badge
-                        variant="outline"
-                        className="text-brand border-brand/30 text-xs shrink-0"
-                      >
-                        {FRAMEWORK_LABELS[project.framework as Framework] ??
-                          project.framework}
-                      </Badge>
-                    )}
                   </div>
                   {project.description && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                       {project.description}
                     </p>
                   )}
+                  {project.framework && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {FRAMEWORK_LABELS[project.framework as Framework] ??
+                        project.framework}
+                    </p>
+                  )}
                 </div>
-                <div className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
               </div>
               <div className="flex items-center justify-between mt-3">
                 <p className="text-xs text-muted-foreground font-mono">
                   {project._count?.events ?? 0} events
                 </p>
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </Link>
           ))}

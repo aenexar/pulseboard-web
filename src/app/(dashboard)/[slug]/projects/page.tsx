@@ -1,5 +1,6 @@
 "use client";
 
+import { FrameworkIcon } from "@/components/framework-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,8 +108,16 @@ export default function ProjectsPage() {
         {projects?.map((project) => (
           <Card key={project.id} className="bg-card border-border">
             <CardHeader className="flex flex-row items-start justify-between pb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-brand" />
+              <div className="flex items-center gap-2.5">
+                {project.framework ? (
+                  <FrameworkIcon
+                    framework={project.framework as Framework}
+                    size={18}
+                    className="shrink-0"
+                  />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-brand mt-0.5" />
+                )}
                 <CardTitle className="text-foreground text-base">
                   {project.name}
                 </CardTitle>
@@ -128,13 +137,17 @@ export default function ProjectsPage() {
                   {project._count?.events ?? 0} events
                 </Badge>
                 {project.framework && (
-                  <Badge
-                    variant="outline"
-                    className="text-brand border-brand/30 text-xs"
-                  >
-                    {FRAMEWORK_LABELS[project.framework as Framework] ??
-                      project.framework}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <FrameworkIcon
+                      framework={project.framework as Framework}
+                      size={12}
+                      className="shrink-0"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {FRAMEWORK_LABELS[project.framework as Framework] ??
+                        project.framework}
+                    </span>
+                  </div>
                 )}
               </div>
               <code className="block text-xs font-mono text-muted-foreground truncate">
