@@ -75,12 +75,14 @@ function RightPanel() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--brand)/0.08),transparent_60%)] pointer-events-none" />
 
       {/* Logo */}
-      <div className="relative flex items-center gap-2.5">
-        <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-        <span className="text-sm font-mono font-semibold text-foreground">
-          PulseBoard
-        </span>
-      </div>
+      <Link href={"/"}>
+        <div className="relative flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+          <span className="text-sm font-mono font-semibold text-foreground">
+            PulseBoard
+          </span>
+        </div>
+      </Link>
 
       {/* Floating cards */}
       <div className="relative flex-1 flex flex-col justify-center gap-3 py-12">
@@ -180,10 +182,13 @@ function LoginForm() {
     <div className="w-full lg:w-1/2 flex items-center justify-center min-h-screen p-8">
       <div className="w-full max-w-sm space-y-8">
         {/* Mobile logo */}
-        <div className="flex items-center gap-2 lg:hidden">
-          <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-          <span className="text-sm font-mono text-brand">PulseBoard</span>
-        </div>
+        <Link href={"/"}>
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+
+            <span className="text-sm font-mono text-brand">PulseBoard</span>
+          </div>
+        </Link>
 
         {/* Header */}
         <div className="space-y-1.5">
