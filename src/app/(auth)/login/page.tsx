@@ -235,13 +235,20 @@ function LoginForm() {
             />
           </div>
 
-          <Button
-            type="submit"
-            disabled={login.isPending}
-            className="w-full bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
-          >
-            {login.isPending ? "Signing in..." : "Sign in"}
-          </Button>
+          <div className="flex gap-3">
+            <Link href="/" className="flex-1">
+              <Button type="button" variant="outline" className="w-full">
+                Cancel
+              </Button>
+            </Link>
+            <Button
+              type="submit"
+              disabled={login.isPending}
+              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
+            >
+              {login.isPending ? "Signing in..." : "Sign in"}
+            </Button>
+          </div>
 
           <p className="text-center text-xs text-muted-foreground">
             By signing in you agree to our{" "}

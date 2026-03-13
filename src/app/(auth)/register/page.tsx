@@ -261,13 +261,20 @@ function RegisterForm() {
             </Label>
           </div>
 
-          <Button
-            type="submit"
-            disabled={register.isPending}
-            className="w-full bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
-          >
-            {register.isPending ? "Creating account..." : "Create account"}
-          </Button>
+          <div className="flex gap-3">
+            <Link href="/" className="flex-1">
+              <Button type="button" variant="outline" className="w-full">
+                Cancel
+              </Button>
+            </Link>
+            <Button
+              type="submit"
+              disabled={register.isPending}
+              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
+            >
+              {register.isPending ? "Creating account..." : "Create account"}
+            </Button>
+          </div>
 
           <p className="text-center text-xs text-muted-foreground">
             By creating an account you agree to our{" "}
