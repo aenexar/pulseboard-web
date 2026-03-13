@@ -1,46 +1,111 @@
-export type User = {
+// ─── Organisation ─────────────────────────────────────────────────────────────
+
+export type OrgPlan = "free" | "pro" | "enterprise";
+
+export type MemberRole = "owner" | "admin" | "member";
+
+export type OrgMember = {
+  id: string;
+  organisationId: string;
+  userId: string;
+  role: MemberRole;
+  joinedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+};
+
+export type Invitation = {
+  id: string;
+  organisationId: string;
+  email: string;
+  role: MemberRole;
+  token: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+  createdAt: string;
+};
+
+export type Organisation = {
   id: string;
   name: string;
-  email: string;
+  slug: string;
+  logoUrl: string | null;
+  plan: OrgPlan;
+  createdAt: string;
+  updatedAt: string;
+  members: OrgMember[];
+  _count?: {
+    projects: number;
+    members: number;
+  };
 };
+
+// ─── Project (userId removed, organisationId added) ───────────────────────────
 
 export type Project = {
   id: string;
   name: string;
   apiKey: string;
-  userId: string;
+  organisationId: string;
   description: string | null;
   framework: Framework | null;
-  logoUrl: string | null;
   repository: Repository | null;
   createdAt: string;
   updatedAt: string;
-  _count?: { events: number };
-};
-
-export type EventType = "error" | "event" | "metric";
-
-export type PulseEvent = {
-  id: string;
-  projectId: string;
-  type: EventType;
-  name: string;
-  payload: Record<string, unknown>;
-  timestamp: string;
-  receivedAt: string;
-};
-
-export type AuthResponse = {
-  success: boolean;
-  data: {
-    accessToken: string;
-    user: User;
+  _count?: {
+    events: number;
   };
 };
 
-export type ApiResponse<T> = {
-  success: boolean;
-  data: T;
+// ─── Framework ────────────────────────────────────────────────────────────────
+
+export type Framework =
+  | "react_native_cli"
+  | "expo"
+  | "flutter"
+  | "ionic"
+  | "xamarin"
+  | "android_view"
+  | "android_compose"
+  | "ios_uikit"
+  | "ios_swiftui";
+
+export const FRAMEWORK_LABELS: Record<Framework, string> = {
+  react_native_cli: "React Native CLI",
+  expo: "Expo",
+  flutter: "Flutter",
+  ionic: "Ionic",
+  xamarin: "Xamarin",
+  android_view: "Android (View)",
+  android_compose: "Android (Compose)",
+  ios_uikit: "iOS (UIKit)",
+  ios_swiftui: "iOS (SwiftUI)",
+};
+
+export const FRAMEWORK_GROUPS: Record<string, Framework[]> = {
+  "Hybrid Mobile": ["react_native_cli", "expo", "flutter", "ionic", "xamarin"],
+  "Native Android": ["android_view", "android_compose"],
+  "Native iOS": ["ios_uikit", "ios_swiftui"],
+};
+
+// ─── Repository ───────────────────────────────────────────────────────────────
+
+export type RepositoryProvider = "github" | "gitlab" | "bitbucket" | "other";
+
+export type Repository = {
+  provider: RepositoryProvider;
+  url: string;
+  branch: string;
+};
+
+export const REPOSITORY_PROVIDER_LABELS: Record<RepositoryProvider, string> = {
+  github: "GitHub",
+  gitlab: "GitLab",
+  bitbucket: "Bitbucket",
+  other: "Other",
 };
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
@@ -49,6 +114,7 @@ export type CrashRate = {
   totalSessions: number;
   crashedSessions: number;
   crashRate: number;
+  crashFreeSessions: number;
   crashFreeUsers: number;
 };
 
@@ -66,23 +132,31 @@ export type CrashGroup = {
 export type CrashByVersion = {
   appVersion: string;
   crashes: number;
+  sessions: number;
+  crashRate: number;
 };
 
 export type CrashByDevice = {
   deviceModel: string;
   crashes: number;
+  sessions: number;
+  crashRate: number;
 };
 
 export type ApiPerformance = {
   endpoint: string;
-  calls: number;
+  httpMethod: string;
   avgDuration: number;
+  p95Duration: number;
+  errorRate: number;
+  callCount: number;
 };
 
 export type ScreenPerformance = {
   screenName: string;
-  views: number;
   avgLoadTime: number;
+  avgTimeSpent: number;
+  viewCount: number;
 };
 
 export type AnalyticsData = {
@@ -97,6 +171,7 @@ export type AnalyticsData = {
 // ─── Insights ─────────────────────────────────────────────────────────────────
 
 export type InsightSeverity = "critical" | "warning" | "info";
+
 export type InsightCategory =
   | "crash"
   | "performance"
@@ -113,7 +188,7 @@ export type Insight = {
   category: InsightCategory;
   metadata: Record<string, unknown> | null;
   isRead: boolean;
-  fingerprint: string;
+  fingerprint: string | null;
   occurrences: number;
   firstSeenAt: string;
   lastSeenAt: string;
@@ -121,12 +196,9 @@ export type Insight = {
 };
 
 export type TriggerInsightsResponse = {
-  success: boolean;
   message: string;
-  data?: {
-    minutesRemaining: number;
-    lastTriggeredAt: string;
-  };
+  minutesRemaining?: number;
+  lastTriggeredAt?: string;
 };
 
 // ─── AI Config ────────────────────────────────────────────────────────────────
@@ -179,8 +251,8 @@ export const PROVIDER_MODELS: Record<AIProvider, AIModel[]> = {
 export const PROVIDER_LABELS: Record<AIProvider, string> = {
   anthropic: "Anthropic",
   openai: "OpenAI",
-  moonshot: "Moonshot (Kimi)",
-  google: "Google Gemini",
+  moonshot: "Moonshot",
+  google: "Google",
 };
 
 export const MODEL_LABELS: Record<AIModel, string> = {
@@ -188,8 +260,8 @@ export const MODEL_LABELS: Record<AIModel, string> = {
   "claude-haiku-4-5": "Claude Haiku 4.5",
   "gpt-4o": "GPT-4o",
   "gpt-4o-mini": "GPT-4o Mini",
-  "moonshot-v1-8k": "Moonshot v1 8K",
-  "moonshot-v1-32k": "Moonshot v1 32K",
+  "moonshot-v1-8k": "Moonshot v1 8k",
+  "moonshot-v1-32k": "Moonshot v1 32k",
   "gemini-1.5-pro": "Gemini 1.5 Pro",
   "gemini-1.5-flash": "Gemini 1.5 Flash",
 };
@@ -203,81 +275,13 @@ export const CRON_PRESET_LABELS: Record<CronPreset, string> = {
   custom: "Custom schedule",
 };
 
-// ─── Project Details ──────────────────────────────────────────────────────────
+// ─── Events ───────────────────────────────────────────────────────────────────
 
-export type Framework =
-  | "react-native-cli"
-  | "react-native-expo"
-  | "flutter"
-  | "ionic"
-  | "xamarin"
-  | "android"
-  | "ios"
-  | "react"
-  | "angular"
-  | "vue"
-  | "nextjs"
-  | "nuxt"
-  | "electron"
-  | "macos"
-  | "windows"
-  | "linux";
-
-export type RepositoryProvider = "github" | "gitlab" | "bitbucket" | "other";
-
-export type Repository = {
-  provider: RepositoryProvider;
-  url: string;
-  branch: string;
-};
-
-export const FRAMEWORK_LABELS: Record<Framework, string> = {
-  "react-native-cli": "React Native CLI",
-  "react-native-expo": "React Native Expo",
-  flutter: "Flutter",
-  ionic: "Ionic",
-  xamarin: "Xamarin",
-  android: "Android",
-  ios: "iOS",
-  react: "React",
-  angular: "Angular",
-  vue: "Vue",
-  nextjs: "Next.js",
-  nuxt: "Nuxt",
-  electron: "Electron",
-  macos: "macOS",
-  windows: "Windows",
-  linux: "Linux",
-};
-
-export const FRAMEWORK_GROUPS: { label: string; frameworks: Framework[] }[] = [
-  {
-    label: "Hybrid Mobile",
-    frameworks: [
-      "react-native-cli",
-      "react-native-expo",
-      "flutter",
-      "ionic",
-      "xamarin",
-    ],
-  },
-  {
-    label: "Native Mobile",
-    frameworks: ["android", "ios"],
-  },
-  {
-    label: "Web",
-    frameworks: ["react", "angular", "vue", "nextjs", "nuxt"],
-  },
-  {
-    label: "Desktop",
-    frameworks: ["electron", "macos", "windows", "linux"],
-  },
-];
-
-export const REPOSITORY_PROVIDER_LABELS: Record<RepositoryProvider, string> = {
-  github: "GitHub",
-  gitlab: "GitLab",
-  bitbucket: "Bitbucket",
-  other: "Other",
+export type PulseEvent = {
+  id: string;
+  projectId: string;
+  type: "error" | "event" | "metric";
+  name: string;
+  payload: Record<string, unknown>;
+  timestamp: string;
 };
