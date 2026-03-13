@@ -1,38 +1,28 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { useLogout } from "@/hooks";
+import { useOrganisations } from "@/hooks/organisations/useOrganisations";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
-import { useOrganisations } from "@/hooks/organisations/useOrganisations";
-
 import {
   Activity,
   BarChart2,
   ChevronLeft,
   FolderKanban,
   LayoutDashboard,
-  LogOut,
   Lightbulb,
   Settings,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { OrgSwitcher } from "./org-switcher";
-
-// ─── Nav item type ────────────────────────────────────────────────────────────
 
 type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
 };
-
-// ─── Nav builders ─────────────────────────────────────────────────────────────
 
 function globalNav(slug: string): NavItem[] {
   return [
@@ -69,8 +59,6 @@ function projectNav(slug: string, projectId: string): NavItem[] {
   ];
 }
 
-// ─── Nav link ─────────────────────────────────────────────────────────────────
-
 function NavLink({
   href,
   label,
@@ -93,12 +81,9 @@ function NavLink({
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-
 export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
-  const logout = useLogout();
   const user = useAuthStore((s) => s.user);
 
   const { data: orgs } = useOrganisations();
@@ -144,41 +129,15 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <Separator className="bg-sidebar-border my-4" />
-
-      {/* Theme toggle */}
-      <div className="flex items-center justify-between px-2 mb-4">
-        <span className="text-xs text-muted-foreground font-medium">
-          Appearance
-        </span>
-        <ThemeToggle />
-      </div>
-
+      {/* Bottom branding */}
       <Separator className="bg-sidebar-border mb-4" />
-
-      {/* User */}
-      <div className="flex items-center gap-3 px-2">
-        <Avatar className="w-8 h-8 shrink-0">
-          <AvatarFallback className="bg-accent text-accent-foreground text-xs">
-            {user?.name?.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">
-            {user?.name}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">
-            {user?.email}
-          </p>
+      <div className="px-2">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+          <span className="text-xs font-mono text-muted-foreground">
+            PulseBoard
+          </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground shrink-0"
-          onClick={() => logout.mutate()}
-        >
-          <LogOut className="w-4 h-4" />
-        </Button>
       </div>
     </aside>
   );
