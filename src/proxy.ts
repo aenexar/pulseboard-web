@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/pricing", "/sdks"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/pricing",
+  "/sdks",
+  "/terms-and-conditions",
+  "/privacy-policy",
+];
 
 const AUTH_ROUTES = ["/login", "/register"];
 
