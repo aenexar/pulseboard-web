@@ -1,24 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED_ROUTES = ["/dashboard", "/projects", "/activity"];
+const PUBLIC_ROUTES = ["/", "/pricing", "/sdks"];
+
 const AUTH_ROUTES = ["/login", "/register"];
+
+function isPublicRoute(pathname: string): boolean {
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
+  if (pathname.startsWith("/invite/")) return true;
+  if (pathname.startsWith("/_next/")) return true;
+  if (pathname.startsWith("/api/")) return true;
+  if (pathname.match(/\.(ico|png|jpg|svg|css|js)$/)) return true;
+  return false;
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("pb_access_token")?.value;
 
-  // Protected routes — redirect to login if no token
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route),
-  );
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Auth pages — redirect to dashboard if already logged in
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  if (isAuthRoute) {
+    if (token) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
   }
 
-  // Auth routes — redirect to dashboard if already logged in
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // Public routes — always allow
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Everything else is protected — require token
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("from", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
