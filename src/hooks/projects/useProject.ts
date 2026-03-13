@@ -1,14 +1,14 @@
-import { api } from "@/lib/api";
-import { ApiResponse, Project } from "@/types";
+import { api, projectRoutes } from "@/lib/api";
+import { Project } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useProject(id: string) {
-  return useQuery({
-    queryKey: ["projects", id],
+export function useProject(slug: string, id: string) {
+  return useQuery<Project>({
+    queryKey: ["projects", slug, id],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Project>>(`/projects/${id}`);
-      return data.data;
+      const res = await api.get(projectRoutes.get(slug, id));
+      return res.data.data;
     },
-    enabled: !!id,
+    enabled: !!slug && !!id,
   });
 }

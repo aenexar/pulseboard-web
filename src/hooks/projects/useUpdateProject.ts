@@ -1,25 +1,22 @@
-import { api } from "@/lib/api";
-import { ApiResponse, Project } from "@/types";
+import { api, projectRoutes } from "@/lib/api";
+import { Project } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useUpdateProject(projectId: string) {
+export function useUpdateProject(slug: string, id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: {
+    mutationFn: async (data: {
       name?: string;
       description?: string;
       framework?: string;
     }) => {
-      const { data } = await api.patch<ApiResponse<Project>>(
-        `/projects/${projectId}`,
-        payload,
-      );
-      return data.data;
+      const res = await api.patch(projectRoutes.update(slug, id), data);
+      return res.data.data as Project;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", slug, id] });
+      queryClient.invalidateQueries({ queryKey: ["projects", slug] });
     },
   });
 }
