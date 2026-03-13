@@ -3,21 +3,17 @@ import { Sparkles, Zap } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { useNewsletterSubscribe } from "@/hooks/useNewsletter";
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+
+  const subscribe = useNewsletterSubscribe();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    setStatus("loading");
-
-    // TODO: wire to POST /newsletter endpoint in Phase 17
-    await new Promise((r) => setTimeout(r, 800));
-    setStatus("success");
+    subscribe.mutate({ email: email.trim(), source: "homepage" });
     setEmail("");
   };
 
@@ -53,22 +49,42 @@ export function NewsletterSection() {
 
           {/* Right — form */}
           <div className="relative w-full md:w-auto md:min-w-[340px]">
-            {status === "success" ? (
+            {subscribe.isSuccess ? (
               <div
                 className={cn(
-                  "flex items-center gap-3 p-4 rounded-xl",
-                  "bg-brand/10 border border-brand/20",
+                  "flex items-start gap-3 p-4 rounded-xl border",
+                  subscribe.data?.message === "Already subscribed"
+                    ? "bg-muted border-border"
+                    : "bg-brand/10 border-brand/20",
                 )}
               >
-                <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center shrink-0">
-                  <Zap className="w-4 h-4 text-brand" />
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                    subscribe.data?.message === "Already subscribed"
+                      ? "bg-muted"
+                      : "bg-brand/20",
+                  )}
+                >
+                  <Zap
+                    className={cn(
+                      "w-4 h-4",
+                      subscribe.data?.message === "Already subscribed"
+                        ? "text-muted-foreground"
+                        : "text-brand",
+                    )}
+                  />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    You&apos;re on the list!
+                    {subscribe.data?.message === "Already subscribed"
+                      ? "Already subscribed"
+                      : "You're on the list!"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    We&apos;ll be in touch when something worth reading drops.
+                    {subscribe.data?.message === "Already subscribed"
+                      ? "This email is already subscribed to PulseBoard updates."
+                      : "We'll be in touch when something worth reading drops."}
                   </p>
                 </div>
               </div>
@@ -91,13 +107,13 @@ export function NewsletterSection() {
                   />
                   <Button
                     type="submit"
-                    disabled={status === "loading"}
+                    disabled={subscribe.isPending}
                     className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold shrink-0"
                   >
-                    {status === "loading" ? "..." : "Subscribe"}
+                    {subscribe.isPending ? "..." : "Subscribe"}
                   </Button>
                 </div>
-                {status === "error" && (
+                {subscribe.isError && (
                   <p className="text-xs text-destructive">
                     Something went wrong. Please try again.
                   </p>

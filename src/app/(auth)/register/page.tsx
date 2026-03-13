@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { useNewsletterSubscribe } from "@/hooks/useNewsletter";
 
 // ─── Animated left panel ──────────────────────────────────────────────────────
 
@@ -161,6 +162,7 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
+  const subscribe = useNewsletterSubscribe();
 
   const [form, setForm] = useState({
     name: "",
@@ -172,7 +174,13 @@ function RegisterForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     register.mutate(form, {
-      onSuccess: () => router.replace(from ?? "/dashboard"),
+      onSuccess: () => {
+        if (newsletter) {
+          subscribe.mutate({ email: form.email, source: "register" });
+          // non-critical — don't await, don't block navigation
+        }
+        router.replace(from ?? "/dashboard");
+      },
     });
   };
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useSupportContact } from "@/hooks/useSupport";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -75,8 +76,6 @@ const FAQS = [
   },
 ];
 
-type FormStatus = "idle" | "loading" | "success" | "error";
-
 export default function SupportPage() {
   const [form, setForm] = useState({
     name: "",
@@ -84,14 +83,16 @@ export default function SupportPage() {
     subject: "",
     message: "",
   });
-  const [status, setStatus] = useState<FormStatus>("idle");
+
+  const contact = useSupportContact();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("loading");
-    // TODO: wire to POST /support endpoint
-    await new Promise((r) => setTimeout(r, 1000));
-    setStatus("success");
+    contact.mutate(form);
+  };
+
+  const handleFormReset = () => {
+    contact.reset();
     setForm({ name: "", email: "", subject: "", message: "" });
   };
 
@@ -199,7 +200,7 @@ export default function SupportPage() {
             </p>
           </div>
 
-          {status === "success" ? (
+          {contact.isSuccess ? (
             <div
               className={cn(
                 "flex items-start gap-4 p-6 rounded-xl",
@@ -209,17 +210,22 @@ export default function SupportPage() {
               <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5 text-brand" />
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">
-                  Message received!
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Thanks for reaching out. We&apos;ll reply to{" "}
-                  <span className="font-medium text-foreground">
-                    {form.email || "your email"}
-                  </span>{" "}
-                  within one business day.
-                </p>
+              <div className="space-y-3 flex-1">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Message received!
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Thanks for reaching out. We&apos;ll reply to{" "}
+                    <span className="font-medium text-foreground">
+                      {form.email}
+                    </span>{" "}
+                    within one business day.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleFormReset}>
+                  Send another message
+                </Button>
               </div>
             </div>
           ) : (
@@ -278,7 +284,7 @@ export default function SupportPage() {
                 />
               </div>
 
-              {status === "error" && (
+              {contact.error && (
                 <p className="text-sm text-destructive">
                   Something went wrong. Please try again or email us directly at{" "}
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="underline">
@@ -289,11 +295,11 @@ export default function SupportPage() {
 
               <Button
                 type="submit"
-                disabled={status === "loading"}
+                disabled={contact.isPending}
                 className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
               >
                 <Zap className="w-4 h-4 mr-2" />
-                {status === "loading" ? "Sending..." : "Send message"}
+                {contact.isPending ? "Sending..." : "Send message"}
               </Button>
             </form>
           )}

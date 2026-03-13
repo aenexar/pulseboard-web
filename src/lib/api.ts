@@ -111,3 +111,8 @@ export const billingRoutes = {
   checkout: (slug: string) => `/billing/${slug}/checkout`,
   portal: (slug: string) => `/billing/${slug}/portal`,
 };
+
+export const publicRoutes = {
+  newsletterSubscribe: () => `/newsletter/subscribe`,
+  supportContact: () => `/support/contact`,
+};
