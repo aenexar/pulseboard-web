@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Organisation } from "@/types";
 import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type Props = {
@@ -16,6 +16,7 @@ export function OrgSwitcher({ orgs, currentSlug }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const currentOrg = orgs.find((o) => o.slug === currentSlug);
 
@@ -44,7 +45,8 @@ export function OrgSwitcher({ orgs, currentSlug }: Props) {
       // Non-critical — proceed anyway
     }
 
-    router.push(`/${slug}`);
+    const subPath = currentSlug ? pathname.replace(`/${currentSlug}`, "") : "";
+    router.push(`/${slug}${subPath}`);
   }
 
   return (

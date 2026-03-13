@@ -61,7 +61,7 @@ export const tokenUtils = {
     Cookies.set(TOKEN_KEY, token, {
       expires: 1,
       path: "/",
-      sameSite: "strict",
+      sameSite: "lax",
     }),
   get: () => Cookies.get(TOKEN_KEY),
   remove: () => Cookies.remove(TOKEN_KEY, { path: "/" }),
