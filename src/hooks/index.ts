@@ -6,6 +6,7 @@ export * from "./projects";
 export * from "./invitations";
 export * from "./members";
 export * from "./organisations";
+export * from "./onboarding";
 
 // Standalone hooks
 export * from "./useAnalytics";

@@ -5,6 +5,8 @@ export type User = {
   name: string;
   email: string;
   lastVisitedOrgSlug: string | null;
+  onboardingCompletedAt: string | null;
+  onboardingDismissedAt: string | null;
 };
 
 export type AuthResponse = {

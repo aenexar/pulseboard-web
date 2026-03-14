@@ -116,3 +116,9 @@ export const publicRoutes = {
   newsletterSubscribe: () => `/newsletter/subscribe`,
   supportContact: () => `/support/contact`,
 };
+
+export const authRoutes = {
+  lastOrg: () => `/auth/last-org`,
+  completeOnboarding: () => `/auth/complete-onboarding`,
+  dismissOnboarding: () => `/auth/dismiss-onboarding`,
+};

@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
         <Navbar />
         <main className="flex-1 overflow-auto p-8">{children}</main>
       </div>
+      <OnboardingChecklist />
     </div>
   );
 }

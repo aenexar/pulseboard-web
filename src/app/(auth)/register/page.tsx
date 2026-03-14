@@ -177,9 +177,8 @@ function RegisterForm() {
       onSuccess: () => {
         if (newsletter) {
           subscribe.mutate({ email: form.email, source: "register" });
-          // non-critical — don't await, don't block navigation
         }
-        router.replace(from ?? "/dashboard");
+        router.replace("/onboarding");
       },
     });
   };
