@@ -1,12 +1,12 @@
 import { api, profileRoutes } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useRevokeAllSessions() {
+export function useRevokeSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      await api.delete(profileRoutes.revokeAll());
+    mutationFn: async (tokenId: string) => {
+      await api.delete(profileRoutes.revokeSession(tokenId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sessions"] });
