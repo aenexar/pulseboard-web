@@ -4,9 +4,22 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  avatarUrl: string | null;
   lastVisitedOrgSlug: string | null;
   onboardingCompletedAt: string | null;
   onboardingDismissedAt: string | null;
+};
+
+export type Device = {
+  id: string;
+  device: string;
+  browser: string;
+  os: string;
+  city: string | null;
+  country: string | null;
+  lastActiveAt: string;
+  createdAt: string;
+  isCurrent: boolean;
 };
 
 export type AuthResponse = {

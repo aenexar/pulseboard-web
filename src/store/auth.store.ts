@@ -7,6 +7,7 @@ type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
   setAuth: (user: User, token: string) => void;
+  updateUser: (user: User) => void;
   clearAuth: () => void;
 };
 
@@ -19,13 +20,14 @@ export const useAuthStore = create<AuthState>()(
         tokenUtils.set(token);
         set({ user, isAuthenticated: true });
       },
+      updateUser: (user) => {
+        set({ user });
+      },
       clearAuth: () => {
         tokenUtils.remove();
         set({ user: null, isAuthenticated: false });
       },
     }),
-    {
-      name: "pb-auth",
-    },
+    { name: "pb-auth" },
   ),
 );

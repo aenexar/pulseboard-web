@@ -47,9 +47,12 @@ api.interceptors.response.use(
 
         return api(original);
       } catch {
-        // Import clearAuth from the store and call it here
         const { useAuthStore } = await import("@/store/auth.store");
+        const { useOnboardingStore } = await import("@/store/onboarding.store");
+        const { queryClient } = await import("@/lib/queryClient");
         useAuthStore.getState().clearAuth();
+        useOnboardingStore.getState().reset();
+        queryClient.clear();
         window.location.href = "/login";
       }
     }
@@ -121,4 +124,19 @@ export const authRoutes = {
   lastOrg: () => `/auth/last-org`,
   completeOnboarding: () => `/auth/complete-onboarding`,
   dismissOnboarding: () => `/auth/dismiss-onboarding`,
+};
+
+export const uploadRoutes = {
+  orgLogo: (slug: string) => `/organisations/${slug}/logo`,
+  avatar: () => `/upload/avatar`,
+};
+
+export const profileRoutes = {
+  get: () => `/profile`,
+  update: () => `/profile`,
+  changeEmail: () => `/profile/email`,
+  changePassword: () => `/profile/password`,
+  sessions: () => `/profile/sessions`,
+  revokeSession: (tokenId: string) => `/profile/sessions/${tokenId}`,
+  revokeAll: () => `/profile/sessions`,
 };

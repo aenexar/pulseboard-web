@@ -96,6 +96,12 @@ export function OnboardingChecklist() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allDone, complete.mutate]);
 
+  const handleChecklistDismiss = () => {
+    dismiss.mutate();
+  };
+
+  console.log({ user });
+
   // Don't show if onboarding is completed or dismissed
   if (!user) return null;
   if (user.onboardingCompletedAt) return null;
@@ -162,7 +168,7 @@ export function OnboardingChecklist() {
           <button
             type="button"
             title="close button"
-            onClick={() => dismiss.mutate()}
+            onClick={handleChecklistDismiss}
             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             <X className="w-4 h-4" />
@@ -232,7 +238,7 @@ export function OnboardingChecklist() {
               </p>
               <button
                 type="button"
-                onClick={() => dismiss.mutate()}
+                onClick={handleChecklistDismiss}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Dismiss

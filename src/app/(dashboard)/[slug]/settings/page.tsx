@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogoUpload } from "@/components/upload/logo-upload";
 import {
   useDeleteOrganisation,
   useOrganisation,
@@ -30,6 +31,7 @@ import {
 } from "@/hooks";
 import { useCreateCheckout } from "@/hooks/billing/useCreateCheckout";
 import { useCreatePortal } from "@/hooks/billing/useCreatePortal";
+import { useUploadOrgLogo } from "@/hooks/uploads/useUploadOrgLogo";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -50,6 +52,7 @@ import { useEffect, useState } from "react";
 function GeneralTab({ slug }: { slug: string }) {
   const { data: org, isLoading } = useOrganisation(slug);
   const updateOrg = useUpdateOrganisation(slug);
+  const uploadLogo = useUploadOrgLogo(slug);
 
   const [name, setName] = useState("");
   const [orgSlug, setOrgSlug] = useState("");
@@ -88,6 +91,17 @@ function GeneralTab({ slug }: { slug: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Logo */}
+          <div className="flex flex-col items-center pb-2">
+            <LogoUpload
+              currentUrl={org?.logoUrl}
+              fallback={org?.name ?? slug}
+              onUpload={(file) => uploadLogo.mutateAsync(file)}
+              isUploading={uploadLogo.isPending}
+              size={80}
+              shape="rounded"
+            />
+          </div>
           <div className="space-y-2">
             <Label>Organisation Name</Label>
             <Input
