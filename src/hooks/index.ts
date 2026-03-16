@@ -10,7 +10,7 @@ export * from "./onboarding";
 export * from "./profile";
 export * from "./activity";
 export * from "./products";
+export * from "./analytics";
 
 // Standalone hooks
-export * from "./useAnalytics";
 export * from "./useRealtimeEvents";
