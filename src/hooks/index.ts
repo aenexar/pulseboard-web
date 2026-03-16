@@ -9,6 +9,7 @@ export * from "./organisations";
 export * from "./onboarding";
 export * from "./profile";
 export * from "./activity";
+export * from "./products";
 
 // Standalone hooks
 export * from "./useAnalytics";
