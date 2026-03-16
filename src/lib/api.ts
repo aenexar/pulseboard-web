@@ -91,23 +91,33 @@ export const orgRoutes = {
 };
 
 export const projectRoutes = {
-  list: (slug: string) => `/organisations/${slug}/projects`,
-  get: (slug: string, id: string) => `/organisations/${slug}/projects/${id}`,
-  create: (slug: string) => `/organisations/${slug}/projects`,
-  update: (slug: string, id: string) => `/organisations/${slug}/projects/${id}`,
-  repository: (slug: string, id: string) =>
-    `/organisations/${slug}/projects/${id}/repository`,
-  delete: (slug: string, id: string) => `/organisations/${slug}/projects/${id}`,
-  analytics: (slug: string, id: string) =>
-    `/organisations/${slug}/projects/${id}/analytics`,
-  insights: (slug: string, id: string) =>
-    `/organisations/${slug}/projects/${id}/insights`,
-  trigger: (slug: string, id: string) =>
-    `/organisations/${slug}/projects/${id}/insights/trigger`,
-  markRead: (slug: string, id: string, insightId: string) =>
-    `/organisations/${slug}/projects/${id}/insights/${insightId}/read`,
-  aiConfig: (slug: string, id: string) =>
-    `/organisations/${slug}/projects/${id}/ai-config`,
+  list: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects`,
+  get: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}`,
+  create: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects`,
+  update: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}`,
+  repository: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/repository`,
+  delete: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}`,
+  analytics: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics`,
+  insights: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/insights`,
+  trigger: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/trigger`,
+  markRead: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    insightId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/${insightId}/read`,
+  aiConfig: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/ai-config`,
 };
 
 export const billingRoutes = {
@@ -139,4 +149,22 @@ export const profileRoutes = {
   sessions: () => `/profile/sessions`,
   revokeSession: (tokenId: string) => `/profile/sessions/${tokenId}`,
   revokeAll: () => `/profile/sessions`,
+};
+
+export const activityRoutes = {
+  org: (slug: string) => `/organisations/${slug}/activity`,
+  user: () => `/profile/activity`,
+};
+
+export const productRoutes = {
+  list: (slug: string) => `/organisations/${slug}/products`,
+  get: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}`,
+  create: (slug: string) => `/organisations/${slug}/products`,
+  update: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}`,
+  delete: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}`,
+  logo: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/logo`,
 };

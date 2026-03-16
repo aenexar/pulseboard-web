@@ -1,5 +1,6 @@
 "use client";
 
+import { UserActivityItem } from "@/components/activity/activity-item";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,12 +29,14 @@ import { LogoUpload } from "@/components/upload/logo-upload";
 import {
   useChangeEmail,
   useChangePassword,
+  useLogout,
   useProfile,
   useRevokeAllSessions,
   useRevokeSession,
   useSessions,
   useUpdateProfile,
   useUploadAvatarProfile,
+  useUserActivity,
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
@@ -71,6 +74,8 @@ function DeviceCard({
   onRevoke: (id: string) => void;
   isRevoking: boolean;
 }) {
+  const logout = useLogout();
+
   return (
     <div
       className={cn(
@@ -115,15 +120,23 @@ function DeviceCard({
               </span>
             </div>
           )}
-          <span>
-            Active{" "}
-            {formatDistanceToNow(new Date(session.lastActiveAt), {
-              addSuffix: true,
-            })}
-          </span>
+          {session.isCurrent ? (
+            <div className="flex items-center gap-1 text-brand">
+              <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+              <span>Active now</span>
+            </div>
+          ) : (
+            <span>
+              Active{" "}
+              {formatDistanceToNow(new Date(session.lastActiveAt), {
+                addSuffix: true,
+              })}
+            </span>
+          )}
         </div>
       </div>
 
+      {/* Other session — simple revoke */}
       {!session.isCurrent && (
         <Button
           variant="ghost"
@@ -134,6 +147,39 @@ function DeviceCard({
         >
           <LogOut className="w-4 h-4" />
         </Button>
+      )}
+
+      {/* Current session — confirm before signing out */}
+      {session.isCurrent && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sign out of this device?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will be signed out of your current session and redirected to
+                the login page.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => logout.mutate()}
+                className="bg-destructive hover:bg-destructive/90 text-white"
+              >
+                Sign out
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );
@@ -520,6 +566,71 @@ function DevicesTab() {
   );
 }
 
+// ─── Activity Tab ──────────────────────────────────────────────────────────────
+
+function ActivityTab() {
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useUserActivity(page);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-14" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Account Activity</CardTitle>
+          <CardDescription>
+            A log of all actions taken on your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data?.items.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No activity recorded yet.
+            </p>
+          ) : (
+            <div className="divide-y divide-border">
+              {data?.items.map((item) => (
+                <UserActivityItem key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+
+          {(data?.hasMore || page > 1) && (
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">Page {page}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!data?.hasMore}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
@@ -533,10 +644,11 @@ export default function ProfilePage() {
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid grid-cols-3 w-64">
+        <TabsList className="grid grid-cols-4 w-84">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
         <div className="mt-6">
           <TabsContent value="general">
@@ -547,6 +659,9 @@ export default function ProfilePage() {
           </TabsContent>
           <TabsContent value="devices">
             <DevicesTab />
+          </TabsContent>
+          <TabsContent value="activity">
+            <ActivityTab />
           </TabsContent>
         </div>
       </Tabs>

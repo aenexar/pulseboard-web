@@ -2,12 +2,18 @@ import { api, projectRoutes } from "@/lib/api";
 import { Insight } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useMarkInsightRead(slug: string, projectId: string) {
+export function useMarkInsightRead(
+  slug: string,
+  productSlug: string,
+  projectId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (insightId: string) => {
-      await api.patch(projectRoutes.markRead(slug, projectId, insightId), {});
+      await api.patch(
+        projectRoutes.markRead(slug, productSlug, projectId, insightId),
+      );
     },
     onMutate: async (insightId: string) => {
       await queryClient.cancelQueries({

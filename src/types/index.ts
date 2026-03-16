@@ -37,8 +37,18 @@ export type ApiResponse<T> = {
 
 // ─── Organisation ─────────────────────────────────────────────────────────────
 
-export type OrgPlan = "free" | "pro" | "enterprise";
-export type MemberRole = "owner" | "admin" | "member";
+export type OrgPlan =
+  | "free"
+  | "pro"
+  | "studio_starter"
+  | "studio_growth"
+  | "studio_scale"
+  | "studio_unlimited"
+  | "enterprise";
+
+export type WorkspaceMode = "solo" | "studio" | "enterprise";
+
+export type MemberRole = "owner" | "admin" | "manager" | "developer" | "reader";
 
 export type OrgMember = {
   id: string;
@@ -71,9 +81,28 @@ export type Organisation = {
   slug: string;
   logoUrl: string | null;
   plan: OrgPlan;
+  workspaceMode: WorkspaceMode;
   createdAt: string;
   updatedAt: string;
   members: OrgMember[];
+  _count?: {
+    products: number;
+    members: number;
+  };
+};
+
+// ─── Product ──────────────────────────────────────────────────────────────────
+
+export type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  organisationId: string;
+  isRestricted: boolean;
+  createdAt: string;
+  updatedAt: string;
   _count?: {
     projects: number;
     members: number;
@@ -86,11 +115,11 @@ export type Project = {
   id: string;
   name: string;
   apiKey: string;
-  organisationId: string;
+  productId: string;
   description: string | null;
   framework: Framework | null;
-  logoUrl: string | null;
   repository: Repository | null;
+  isRestricted: boolean;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -351,4 +380,39 @@ export const REPOSITORY_PROVIDER_LABELS: Record<RepositoryProvider, string> = {
   gitlab: "GitLab",
   bitbucket: "Bitbucket",
   other: "Other",
+};
+
+// ─── Activity ─────────────────────────────────────────────────────────────────
+
+export type ActivityLog = {
+  id: string;
+  organisationId: string;
+  actorId: string | null;
+  actorName: string | null;
+  actorAvatar: string | null;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  targetName: string | null;
+  metadata: Record<string, unknown> | null;
+  isAdminOnly: boolean;
+  createdAt: string;
+};
+
+export type UserActivityLog = {
+  id: string;
+  userId: string;
+  action: string;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+};
+
+export type PaginatedActivity<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 };

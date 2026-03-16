@@ -2,12 +2,18 @@ import { api, projectRoutes } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export function useTriggerInsights(slug: string, projectId: string) {
+export function useTriggerInsights(
+  slug: string,
+  productSlug: string,
+  projectId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
-      const res = await api.post(projectRoutes.trigger(slug, projectId), {});
+      const res = await api.post(
+        projectRoutes.trigger(slug, productSlug, projectId),
+      );
       return res.data;
     },
     onSuccess: () => {

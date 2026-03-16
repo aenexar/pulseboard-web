@@ -8,6 +8,7 @@ export * from "./members";
 export * from "./organisations";
 export * from "./onboarding";
 export * from "./profile";
+export * from "./activity";
 
 // Standalone hooks
 export * from "./useAnalytics";
