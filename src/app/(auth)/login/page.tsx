@@ -208,9 +208,12 @@ function LoginForm() {
     setOauthError(null);
     login.mutate(form, {
       onSuccess: () => router.replace(from ?? "/dashboard"),
-      onError: (err: any) => {
-        if (err?.response?.data?.code === "OAUTH_ONLY") {
-          const providers = err.response.data.providers as string[];
+      onError: (err: unknown) => {
+        const axiosErr = err as {
+          response?: { data?: { code?: string; providers?: string[] } };
+        };
+        if (axiosErr?.response?.data?.code === "OAUTH_ONLY") {
+          const providers = axiosErr.response?.data?.providers ?? [];
           setOauthError(
             `This account uses ${providers.join(" or ")} sign-in. Use the button below.`,
           );
