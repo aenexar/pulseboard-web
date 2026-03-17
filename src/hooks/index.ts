@@ -11,6 +11,8 @@ export * from "./profile";
 export * from "./activity";
 export * from "./products";
 export * from "./analytics";
+export * from "./connections";
+export * from "./github";
 
 // Standalone hooks
 export * from "./useRealtimeEvents";

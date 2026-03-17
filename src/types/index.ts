@@ -8,6 +8,7 @@ export type User = {
   lastVisitedOrgSlug: string | null;
   onboardingCompletedAt: string | null;
   onboardingDismissedAt: string | null;
+  hasPassword?: boolean; // present on profile endpoint only
 };
 
 export type Device = {

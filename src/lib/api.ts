@@ -168,3 +168,13 @@ export const productRoutes = {
   logo: (slug: string, productSlug: string) =>
     `/organisations/${slug}/products/${productSlug}/logo`,
 };
+
+export const connectionRoutes = {
+  list: () => `/profile/connections`,
+  disconnect: (provider: string) => `/profile/connections/${provider}`,
+};
+
+export const githubRoutes = {
+  install: (slug: string) => `/github/install/${slug}`,
+  repos: (slug: string) => `/organisations/${slug}/github/repos`,
+};

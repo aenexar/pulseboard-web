@@ -38,6 +38,7 @@ import {
   useAiConfig,
   useDeleteAiConfig,
   useDeleteProject,
+  useGitHubRepos,
   useProducts,
   useProject,
   useUpdateProject,
@@ -512,6 +513,7 @@ function RepositoryTab({
   projectId: string;
 }) {
   const { data: project, isLoading } = useProject(slug, productSlug, projectId);
+  const { data: repos, isLoading: reposLoading } = useGitHubRepos(slug);
   const updateRepository = useUpdateRepository(slug, productSlug, projectId);
 
   const [provider, setProvider] = useState<RepositoryProvider>("github");
@@ -535,6 +537,8 @@ function RepositoryTab({
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const hasGitHubInstallation = (repos?.length ?? 0) > 0;
+  const isGitHub = provider === "github";
   const isValid = url.trim().length > 0 && branch.trim().length > 0;
 
   if (isLoading) return <Skeleton className="h-64" />;
@@ -574,15 +578,89 @@ function RepositoryTab({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Repository URL</Label>
-            <Input
-              placeholder="https://github.com/yourorg/your-repo"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="font-mono text-sm"
-            />
-          </div>
+
+          {/* GitHub App install banner */}
+          {isGitHub && !hasGitHubInstallation && (
+            <div
+              className={cn(
+                "flex items-start justify-between gap-4 p-4 rounded-lg",
+                "bg-muted border border-border",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <FolderGit2 className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    GitHub App not installed
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Install the PulseBoard GitHub App to browse and connect your
+                    repositories.
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`${process.env.NEXT_PUBLIC_API_URL}/github/install/${slug}`}
+                className="shrink-0"
+              >
+                <Button
+                  size="sm"
+                  className="bg-brand hover:bg-brand/90 text-black font-semibold"
+                >
+                  Install App
+                </Button>
+              </a>
+            </div>
+          )}
+
+          {/* GitHub repo browser */}
+          {isGitHub && hasGitHubInstallation && (
+            <div className="space-y-2">
+              <Label>Repository</Label>
+              <Select
+                value={url}
+                onValueChange={(v) => {
+                  const repo = repos?.find((r) => r.url === v);
+                  setUrl(v);
+                  if (repo) setBranch(repo.defaultBranch);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      reposLoading ? "Loading repos..." : "Select a repository"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {repos?.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.url}>
+                      {repo.fullName}
+                      {repo.private && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          Private
+                        </span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Manual URL input for non-GitHub providers */}
+          {!isGitHub && (
+            <div className="space-y-2">
+              <Label>Repository URL</Label>
+              <Input
+                placeholder="https://gitlab.com/yourorg/your-repo"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="font-mono text-sm"
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <GitBranch className="w-3.5 h-3.5" />
@@ -595,11 +673,11 @@ function RepositoryTab({
               className="font-mono text-sm"
             />
           </div>
-          {!project?.repository && (
+
+          {!project?.repository && !url && (
             <div
               className={cn(
-                "flex items-start gap-3 p-4 rounded-lg",
-                "bg-muted border border-border",
+                "flex items-start gap-3 p-4 rounded-lg bg-muted border border-border",
               )}
             >
               <FolderGit2 className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
@@ -616,6 +694,7 @@ function RepositoryTab({
           )}
         </CardContent>
       </Card>
+
       <div className="flex items-center gap-3">
         <Button
           onClick={handleSave}
