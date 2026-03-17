@@ -330,7 +330,7 @@ function BillingTab({ slug }: { slug: string }) {
 
             {plan === "free" && (
               <Button
-                onClick={() => checkout.mutate()}
+                // onClick={() => checkout.mutate()}
                 disabled={checkout.isPending}
                 className="bg-brand hover:bg-brand/90 text-black font-semibold shrink-0 ml-4"
               >
