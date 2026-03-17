@@ -149,6 +149,7 @@ export const profileRoutes = {
   sessions: () => `/profile/sessions`,
   revokeSession: (tokenId: string) => `/profile/sessions/${tokenId}`,
   revokeAll: () => `/profile/sessions`,
+  refreshProvider: () => `/profile/refresh-provider`,
 };
 
 export const activityRoutes = {

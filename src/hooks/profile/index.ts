@@ -6,3 +6,4 @@ export * from "./useRevokeSession";
 export * from "./useSessions";
 export * from "./useUpdateProfile";
 export * from "./useUploadAvatarProfile";
+export * from "./useRefreshProvider";

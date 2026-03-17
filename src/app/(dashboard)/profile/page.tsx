@@ -33,6 +33,7 @@ import {
   useDisconnectProvider,
   useLogout,
   useProfile,
+  useRefreshProvider,
   useRevokeAllSessions,
   useRevokeSession,
   useSessions,
@@ -187,31 +188,32 @@ function DeviceCard({
   );
 }
 
-// ─── General Tab ──────────────────────────────────────────────────────────────
+// ─── General Tab ─────────────────────────────────────────────────────────────
 
 function GeneralTab() {
   const { data: profile, isLoading } = useProfile();
+  const { data: connections } = useConnections();
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatarProfile();
   const user = useAuthStore((s) => s.user);
+  const refreshProvider = useRefreshProvider();
 
   const [name, setName] = useState("");
   const [saved, setSaved] = useState(false);
 
+  const isOAuthOnly = !profile?.hasPassword && (connections?.length ?? 0) > 0;
+  const connectedWith = connections?.[0]?.provider;
+
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     if (profile) {
-      timeout = setTimeout(() => {
-        setName(profile.name);
-      }, 0);
+      timeout = setTimeout(() => setName(profile.name), 0);
     }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
+    return () => clearTimeout(timeout);
   }, [profile]);
+
+  // Refresh name/avatar from provider
+  const handleRefresh = () => refreshProvider.mutate();
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -235,12 +237,37 @@ function GeneralTab() {
             <LogoUpload
               currentUrl={user?.avatarUrl}
               fallback={user?.name ?? ""}
-              onUpload={(file) => uploadAvatar.mutateAsync(file)}
+              onUpload={
+                isOAuthOnly
+                  ? undefined
+                  : (file) => uploadAvatar.mutateAsync(file)
+              }
               isUploading={uploadAvatar.isPending}
               size={80}
               shape="circle"
+              disabled={isOAuthOnly}
             />
           </div>
+
+          {/* OAuth notice */}
+          {isOAuthOnly && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
+              <p className="text-sm text-muted-foreground">
+                Profile synced from{" "}
+                <span className="font-medium capitalize text-foreground">
+                  {connectedWith}
+                </span>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshProvider.isPending}
+              >
+                {refreshProvider.isPending ? "Refreshing..." : "Refresh"}
+              </Button>
+            </div>
+          )}
 
           {/* Name */}
           <div className="space-y-2">
@@ -249,10 +276,11 @@ function GeneralTab() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="John Doe"
+              disabled={isOAuthOnly}
             />
           </div>
 
-          {/* Email (read-only here) */}
+          {/* Email */}
           <div className="space-y-2">
             <Label>Email</Label>
             <Input
@@ -260,29 +288,33 @@ function GeneralTab() {
               disabled
               className="text-muted-foreground"
             />
-            <p className="text-xs text-muted-foreground">
-              Change your email in the Security tab.
-            </p>
+            {!isOAuthOnly && (
+              <p className="text-xs text-muted-foreground">
+                Change your email in the Security tab.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-3">
-        <Button
-          onClick={handleSave}
-          disabled={!name.trim() || updateProfile.isPending}
-          className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          {updateProfile.isPending ? "Saving..." : "Save Changes"}
-        </Button>
-        {saved && (
-          <div className="flex items-center gap-1.5 text-sm text-brand">
-            <CheckCircle2 className="w-4 h-4" />
-            Saved
-          </div>
-        )}
-      </div>
+      {!isOAuthOnly && (
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={!name.trim() || updateProfile.isPending}
+            className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {updateProfile.isPending ? "Saving..." : "Save Changes"}
+          </Button>
+          {saved && (
+            <div className="flex items-center gap-1.5 text-sm text-brand">
+              <CheckCircle2 className="w-4 h-4" />
+              Saved
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -290,8 +322,13 @@ function GeneralTab() {
 // ─── Security Tab ─────────────────────────────────────────────────────────────
 
 function SecurityTab() {
+  const { data: profile } = useProfile();
+  const { data: connections } = useConnections();
   const changeEmail = useChangeEmail();
   const changePassword = useChangePassword();
+
+  const isOAuthOnly = !profile?.hasPassword && (connections?.length ?? 0) > 0;
+  const hasPassword = !!profile?.hasPassword;
 
   const [emailForm, setEmailForm] = useState({ email: "", password: "" });
   const [passForm, setPassForm] = useState({
@@ -299,7 +336,10 @@ function SecurityTab() {
     newPassword: "",
     confirmPassword: "",
   });
-
+  const [newPassForm, setNewPassForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [emailSaved, setEmailSaved] = useState(false);
   const [passSaved, setPassSaved] = useState(false);
 
@@ -327,161 +367,245 @@ function SecurityTab() {
     passForm.confirmPassword.length > 0 &&
     passForm.newPassword !== passForm.confirmPassword;
 
+  const newPasswordMismatch =
+    newPassForm.confirmPassword.length > 0 &&
+    newPassForm.newPassword !== newPassForm.confirmPassword;
+
   return (
     <div className="space-y-6">
-      {/* Change Email */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-muted-foreground" />
-            <CardTitle className="text-base">Change Email</CardTitle>
-          </div>
-          <CardDescription>
-            Confirm your password to update your email address.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleEmailChange} className="space-y-4">
-            <div className="space-y-2">
-              <Label>New Email</Label>
-              <Input
-                type="email"
-                placeholder="new@example.com"
-                value={emailForm.email}
-                onChange={(e) =>
-                  setEmailForm({ ...emailForm, email: e.target.value })
-                }
-                required
-              />
+      {/* Change Email — only for email/password users */}
+      {!isOAuthOnly && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <CardTitle className="text-base">Change Email</CardTitle>
             </div>
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={emailForm.password}
-                onChange={(e) =>
-                  setEmailForm({ ...emailForm, password: e.target.value })
-                }
-                required
-              />
-            </div>
-            {changeEmail.isError && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                {changeEmail.error instanceof Error
-                  ? changeEmail.error.message
-                  : "Failed to update email"}
+            <CardDescription>
+              Confirm your password to update your email address.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleEmailChange} className="space-y-4">
+              <div className="space-y-2">
+                <Label>New Email</Label>
+                <Input
+                  type="email"
+                  placeholder="new@example.com"
+                  value={emailForm.email}
+                  onChange={(e) =>
+                    setEmailForm({ ...emailForm, email: e.target.value })
+                  }
+                  required
+                />
               </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Button
-                type="submit"
-                disabled={changeEmail.isPending}
-                className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
-              >
-                {changeEmail.isPending ? "Updating..." : "Update Email"}
-              </Button>
-              {emailSaved && (
-                <div className="flex items-center gap-1.5 text-sm text-brand">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Updated
+              <div className="space-y-2">
+                <Label>Current Password</Label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={emailForm.password}
+                  onChange={(e) =>
+                    setEmailForm({ ...emailForm, password: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              {changeEmail.isError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {changeEmail.error instanceof Error
+                    ? changeEmail.error.message
+                    : "Failed to update email"}
                 </div>
               )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="submit"
+                  disabled={changeEmail.isPending}
+                  className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+                >
+                  {changeEmail.isPending ? "Updating..." : "Update Email"}
+                </Button>
+                {emailSaved && (
+                  <div className="flex items-center gap-1.5 text-sm text-brand">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Updated
+                  </div>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Change Password */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-muted-foreground" />
-            <CardTitle className="text-base">Change Password</CardTitle>
-          </div>
-          <CardDescription>
-            Use a strong password with at least 8 characters.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={passForm.currentPassword}
-                onChange={(e) =>
-                  setPassForm({ ...passForm, currentPassword: e.target.value })
-                }
-                required
-              />
+      {/* Set Password — OAuth-only users */}
+      {isOAuthOnly && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <CardTitle className="text-base">Set a Password</CardTitle>
             </div>
-            <div className="space-y-2">
-              <Label>New Password</Label>
-              <Input
-                type="password"
-                placeholder="Min. 8 characters"
-                value={passForm.newPassword}
-                onChange={(e) =>
-                  setPassForm({ ...passForm, newPassword: e.target.value })
-                }
-                minLength={8}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Confirm New Password</Label>
-              <Input
-                type="password"
-                placeholder="Repeat new password"
-                value={passForm.confirmPassword}
-                onChange={(e) =>
-                  setPassForm({ ...passForm, confirmPassword: e.target.value })
-                }
-                required
-                className={passwordMismatch ? "border-destructive" : ""}
-              />
-              {passwordMismatch && (
-                <p className="text-xs text-destructive">
-                  Passwords do not match
-                </p>
-              )}
-            </div>
-            {changePassword.isError && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                Current password is incorrect
+            <CardDescription>
+              Add a password so you can sign in with email too.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div className="space-y-2">
+                <Label>New Password</Label>
+                <Input
+                  type="password"
+                  placeholder="Min. 8 characters"
+                  value={newPassForm.newPassword}
+                  onChange={(e) =>
+                    setNewPassForm({
+                      ...newPassForm,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  minLength={8}
+                  required
+                />
               </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Button
-                type="submit"
-                disabled={
-                  changePassword.isPending ||
-                  passwordMismatch ||
-                  !passForm.currentPassword ||
-                  !passForm.newPassword
-                }
-                className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
-              >
-                {changePassword.isPending ? "Updating..." : "Update Password"}
-              </Button>
-              {passSaved && (
-                <div className="flex items-center gap-1.5 text-sm text-brand">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Updated
+              <div className="space-y-2">
+                <Label>Confirm Password</Label>
+                <Input
+                  type="password"
+                  placeholder="Repeat password"
+                  value={newPassForm.confirmPassword}
+                  onChange={(e) =>
+                    setNewPassForm({
+                      ...newPassForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  required
+                  className={newPasswordMismatch ? "border-destructive" : ""}
+                />
+                {newPasswordMismatch && (
+                  <p className="text-xs text-destructive">
+                    Passwords do not match
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="submit"
+                  disabled={!newPassForm.newPassword || newPasswordMismatch}
+                  className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+                >
+                  Set Password
+                </Button>
+                {passSaved && (
+                  <div className="flex items-center gap-1.5 text-sm text-brand">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Password set
+                  </div>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Change Password — email/password users only */}
+      {hasPassword && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <CardTitle className="text-base">Change Password</CardTitle>
+            </div>
+            <CardDescription>
+              Use a strong password with at least 8 characters.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Current Password</Label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={passForm.currentPassword}
+                  onChange={(e) =>
+                    setPassForm({
+                      ...passForm,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>New Password</Label>
+                <Input
+                  type="password"
+                  placeholder="Min. 8 characters"
+                  value={passForm.newPassword}
+                  onChange={(e) =>
+                    setPassForm({ ...passForm, newPassword: e.target.value })
+                  }
+                  minLength={8}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Confirm New Password</Label>
+                <Input
+                  type="password"
+                  placeholder="Repeat new password"
+                  value={passForm.confirmPassword}
+                  onChange={(e) =>
+                    setPassForm({
+                      ...passForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  required
+                  className={passwordMismatch ? "border-destructive" : ""}
+                />
+                {passwordMismatch && (
+                  <p className="text-xs text-destructive">
+                    Passwords do not match
+                  </p>
+                )}
+              </div>
+              {changePassword.isError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  Current password is incorrect
                 </div>
               )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="submit"
+                  disabled={
+                    changePassword.isPending ||
+                    passwordMismatch ||
+                    !passForm.currentPassword ||
+                    !passForm.newPassword
+                  }
+                  className="bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
+                >
+                  {changePassword.isPending ? "Updating..." : "Update Password"}
+                </Button>
+                {passSaved && (
+                  <div className="flex items-center gap-1.5 text-sm text-brand">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Updated
+                  </div>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
-
 // ─── Devices Tab ──────────────────────────────────────────────────────────────
 
 function DevicesTab() {
