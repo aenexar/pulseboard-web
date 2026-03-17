@@ -92,11 +92,14 @@ export function Sidebar() {
   const projectId = params?.id as string | undefined;
 
   const isProjectView = !!projectId;
-  const currentSlug = slug ?? user?.lastVisitedOrgSlug ?? "";
+  const currentSlug = slug ?? user?.lastVisitedOrgSlug ?? orgs?.[0]?.slug ?? "";
 
-  const navItems = isProjectView
-    ? projectNav(currentSlug, projectId!)
-    : globalNav(currentSlug);
+  // Guard — don't render nav items with empty slug
+  const navItems = !currentSlug
+    ? []
+    : isProjectView
+      ? projectNav(currentSlug, projectId!)
+      : globalNav(currentSlug);
 
   return (
     <aside
