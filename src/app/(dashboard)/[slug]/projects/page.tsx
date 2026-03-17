@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCreateProject, useProjects } from "@/hooks";
+import { useCreateProject, useProjects, useProducts } from "@/hooks";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
 import { ArrowRight, FolderKanban, Plus } from "lucide-react";
 import Link from "next/link";
@@ -24,13 +24,24 @@ export default function ProjectsPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const { data: projects, isLoading } = useProjects(slug);
-  const createProject = useCreateProject(slug);
+  // Auto-resolve default product for solo orgs
+  const { data: products, isLoading: productsLoading } = useProducts(slug);
+  const defaultProduct = products?.[0];
+  const productSlug = defaultProduct?.slug ?? "";
+
+  const { data: projects, isLoading: projectsLoading } = useProjects(
+    slug,
+    productSlug,
+  );
+  const createProject = useCreateProject(slug, productSlug);
+
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
 
+  const isLoading = productsLoading || projectsLoading;
+
   const handleCreate = async () => {
-    if (!name.trim()) return;
+    if (!name.trim() || !productSlug) return;
     await createProject.mutateAsync(name.trim());
     setName("");
     setOpen(false);
@@ -60,7 +71,10 @@ export default function ProjectsPage() {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-brand hover:bg-brand/90 text-black font-semibold">
+            <Button
+              className="bg-brand hover:bg-brand/90 text-black font-semibold"
+              disabled={!productSlug}
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Project
             </Button>

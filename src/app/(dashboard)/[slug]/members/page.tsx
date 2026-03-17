@@ -57,11 +57,7 @@ import { useState } from "react";
 
 const ROLE_CONFIG: Record<
   MemberRole,
-  {
-    label: string;
-    icon: React.ElementType;
-    className: string;
-  }
+  { label: string; icon: React.ElementType; className: string }
 > = {
   owner: {
     label: "Owner",
@@ -73,10 +69,20 @@ const ROLE_CONFIG: Record<
     icon: Shield,
     className: "text-brand border-brand/30 bg-brand/10",
   },
-  member: {
-    label: "Member",
+  manager: {
+    label: "Manager",
+    icon: Shield,
+    className: "text-blue-500 border-blue-500/30 bg-blue-500/10",
+  },
+  developer: {
+    label: "Developer",
     icon: User,
     className: "text-muted-foreground border-border",
+  },
+  reader: {
+    label: "Reader",
+    icon: User,
+    className: "text-muted-foreground/60 border-border",
   },
 };
 
@@ -144,7 +150,9 @@ function MemberRow({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="developer">Developer</SelectItem>
+              <SelectItem value="reader">Reader</SelectItem>
             </SelectContent>
           </Select>
 
@@ -188,7 +196,9 @@ function MemberRow({
 function InviteDialog({ slug }: { slug: string }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"admin" | "member">("member");
+  const [role, setRole] = useState<
+    "admin" | "developer" | "manager" | "reader"
+  >("developer");
 
   const createInvitation = useCreateInvitation(slug);
 
@@ -227,7 +237,9 @@ function InviteDialog({ slug }: { slug: string }) {
             <Label>Role</Label>
             <Select
               value={role}
-              onValueChange={(v) => setRole(v as "admin" | "member")}
+              onValueChange={(v) =>
+                setRole(v as "admin" | "developer" | "manager" | "reader")
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -236,9 +248,13 @@ function InviteDialog({ slug }: { slug: string }) {
                 <SelectItem value="admin">
                   Admin — can manage members and projects
                 </SelectItem>
-                <SelectItem value="member">
-                  Member — can view and use projects
+                <SelectItem value="manager">
+                  Manager — can manage projects
                 </SelectItem>
+                <SelectItem value="developer">
+                  Developer — can view and use projects
+                </SelectItem>
+                <SelectItem value="reader">Reader — view only</SelectItem>
               </SelectContent>
             </Select>
           </div>

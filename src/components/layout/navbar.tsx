@@ -45,7 +45,7 @@ function usePageMeta() {
         description: "Manage your project configuration",
       };
     return {
-      title: "Project",
+      title: "Overview",
       description: "Live event feed and project details",
     };
   }
@@ -72,7 +72,14 @@ function usePageMeta() {
       description: "Recent activity across this organisation",
     };
 
-  return { title: "Overview", description: "Organisation summary" };
+  // Profile pages
+  if (pathname.startsWith("/profile"))
+    return {
+      title: "Profile",
+      description: "Manage your account and preferences",
+    };
+
+  return { title: slug, description: "Organisation overview" };
 }
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────

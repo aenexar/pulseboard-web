@@ -4,7 +4,7 @@ import { EventsFeed } from "@/components/dashboard/events-feed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProject } from "@/hooks";
+import { useProject, useProducts } from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
@@ -18,7 +18,11 @@ export default function ProjectPage() {
   const slug = params?.slug as string;
   const id = params?.id as string;
 
-  const { data: project, isLoading } = useProject(slug, id);
+  // Auto-resolve default product for solo orgs
+  const { data: products } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
+
+  const { data: project, isLoading } = useProject(slug, productSlug, id);
   const { events, connected, enabled, start, stop, clearEvents } =
     useRealtimeEvents(id);
   const [copied, setCopied] = useState(false);
@@ -30,7 +34,7 @@ export default function ProjectPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isLoading) {
+  if (isLoading || !productSlug) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />

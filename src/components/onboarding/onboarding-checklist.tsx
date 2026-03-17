@@ -3,6 +3,7 @@
 import {
   useCompleteOnboarding,
   useDismissOnboarding,
+  useProducts,
   useProjects,
 } from "@/hooks";
 import { useOrganisations } from "@/hooks/organisations/useOrganisations";
@@ -38,7 +39,12 @@ export function OnboardingChecklist() {
 
   const { data: orgs } = useOrganisations();
   const firstSlug = slug ?? orgs?.[0]?.slug ?? "";
-  const { data: projects } = useProjects(firstSlug);
+
+  // Auto-resolve default product
+  const { data: products } = useProducts(firstSlug);
+  const productSlug = products?.[0]?.slug ?? "";
+
+  const { data: projects } = useProjects(firstSlug, productSlug);
 
   const dismiss = useDismissOnboarding();
   const complete = useCompleteOnboarding();
@@ -47,7 +53,7 @@ export function OnboardingChecklist() {
 
   const hasProject = (projects?.length ?? 0) > 0;
   const firstProject = projects?.[0];
-  const hasAiConfig = false; // will be true once we check aiConfig — simplified for now
+  const hasAiConfig = false;
 
   const items: ChecklistItem[] = [
     {
@@ -61,7 +67,7 @@ export function OnboardingChecklist() {
       id: "sdk",
       label: "Install the SDK",
       icon: Terminal,
-      done: false, // no way to verify — trust the user
+      done: false,
       href: firstProject
         ? `/${firstSlug}/projects/${firstProject.id}`
         : `/${firstSlug}/projects`,
@@ -99,8 +105,6 @@ export function OnboardingChecklist() {
   const handleChecklistDismiss = () => {
     dismiss.mutate();
   };
-
-  console.log({ user });
 
   // Don't show if onboarding is completed or dismissed
   if (!user) return null;

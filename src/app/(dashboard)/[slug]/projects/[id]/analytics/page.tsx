@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAnalytics } from "@/hooks";
+import { useAnalytics, useProducts } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   Activity,
@@ -117,7 +117,10 @@ export default function AnalyticsPage() {
   const slug = params?.slug as string;
   const id = params?.id as string;
 
-  const { data, isLoading } = useAnalytics(slug, id);
+  const { data: products } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
+
+  const { data, isLoading } = useAnalytics(slug, productSlug, id);
 
   if (isLoading) {
     return (

@@ -38,6 +38,7 @@ import {
   useAiConfig,
   useDeleteAiConfig,
   useDeleteProject,
+  useProducts,
   useProject,
   useUpdateProject,
   useUpdateRepository,
@@ -80,13 +81,15 @@ import { useEffect, useState } from "react";
 
 function ProjectDetailsTab({
   slug,
+  productSlug,
   projectId,
 }: {
   slug: string;
+  productSlug: string;
   projectId: string;
 }) {
-  const { data: project, isLoading } = useProject(slug, projectId);
-  const updateProject = useUpdateProject(slug, projectId);
+  const { data: project, isLoading } = useProject(slug, productSlug, projectId);
+  const updateProject = useUpdateProject(slug, productSlug, projectId);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -206,10 +209,22 @@ function ProjectDetailsTab({
 
 // ─── AI Config Tab ────────────────────────────────────────────────────────────
 
-function AIConfigTab({ slug, projectId }: { slug: string; projectId: string }) {
-  const { data: aiConfig, isLoading } = useAiConfig(slug, projectId);
-  const upsertConfig = useUpsertAiConfig(slug, projectId);
-  const deleteConfig = useDeleteAiConfig(slug, projectId);
+function AIConfigTab({
+  slug,
+  productSlug,
+  projectId,
+}: {
+  slug: string;
+  productSlug: string;
+  projectId: string;
+}) {
+  const { data: aiConfig, isLoading } = useAiConfig(
+    slug,
+    productSlug,
+    projectId,
+  );
+  const upsertConfig = useUpsertAiConfig(slug, productSlug, projectId);
+  const deleteConfig = useDeleteAiConfig(slug, productSlug, projectId);
 
   const [provider, setProvider] = useState<AIProvider>("anthropic");
   const [model, setModel] = useState<AIModel>("claude-sonnet-4-5");
@@ -489,13 +504,15 @@ function AIConfigTab({ slug, projectId }: { slug: string; projectId: string }) {
 
 function RepositoryTab({
   slug,
+  productSlug,
   projectId,
 }: {
   slug: string;
+  productSlug: string;
   projectId: string;
 }) {
-  const { data: project, isLoading } = useProject(slug, projectId);
-  const updateRepository = useUpdateRepository(slug, projectId);
+  const { data: project, isLoading } = useProject(slug, productSlug, projectId);
+  const updateRepository = useUpdateRepository(slug, productSlug, projectId);
 
   const [provider, setProvider] = useState<RepositoryProvider>("github");
   const [url, setUrl] = useState("");
@@ -627,9 +644,17 @@ function RepositoryTab({
 
 // ─── Security Tab ─────────────────────────────────────────────────────────────
 
-function SecurityTab({ slug, projectId }: { slug: string; projectId: string }) {
+function SecurityTab({
+  slug,
+  productSlug,
+  projectId,
+}: {
+  slug: string;
+  productSlug: string;
+  projectId: string;
+}) {
   const router = useRouter();
-  const deleteProject = useDeleteProject(slug, projectId);
+  const deleteProject = useDeleteProject(slug, productSlug, projectId);
 
   const handleDelete = async () => {
     await deleteProject.mutateAsync();
@@ -710,6 +735,18 @@ export default function SettingsPage() {
   const slug = params?.slug as string;
   const projectId = params?.id as string;
 
+  const { data: products } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
+
+  if (!productSlug) {
+    return (
+      <div className="space-y-8 max-w-2xl">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-2xl">
       <div>
@@ -718,7 +755,6 @@ export default function SettingsPage() {
           Manage your project configuration
         </p>
       </div>
-
       <Tabs defaultValue="details">
         <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="details">Details</TabsTrigger>
@@ -728,16 +764,32 @@ export default function SettingsPage() {
         </TabsList>
         <div className="mt-6">
           <TabsContent value="details">
-            <ProjectDetailsTab slug={slug} projectId={projectId} />
+            <ProjectDetailsTab
+              slug={slug}
+              productSlug={productSlug}
+              projectId={projectId}
+            />
           </TabsContent>
           <TabsContent value="ai">
-            <AIConfigTab slug={slug} projectId={projectId} />
+            <AIConfigTab
+              slug={slug}
+              productSlug={productSlug}
+              projectId={projectId}
+            />
           </TabsContent>
           <TabsContent value="repository">
-            <RepositoryTab slug={slug} projectId={projectId} />
+            <RepositoryTab
+              slug={slug}
+              productSlug={productSlug}
+              projectId={projectId}
+            />
           </TabsContent>
           <TabsContent value="security">
-            <SecurityTab slug={slug} projectId={projectId} />
+            <SecurityTab
+              slug={slug}
+              productSlug={productSlug}
+              projectId={projectId}
+            />
           </TabsContent>
         </div>
       </Tabs>

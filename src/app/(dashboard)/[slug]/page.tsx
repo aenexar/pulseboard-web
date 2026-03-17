@@ -4,7 +4,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { FrameworkIcon } from "@/components/framework-icons";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrganisation, useProjects } from "@/hooks";
+import { useOrganisation, useProducts, useProjects } from "@/hooks";
 import { FRAMEWORK_LABELS, Framework } from "@/types";
 import {
   Activity,
@@ -21,9 +21,15 @@ export default function OrgOverviewPage() {
   const slug = params?.slug as string;
 
   const { data: org, isLoading: orgLoading } = useOrganisation(slug);
-  const { data: projects, isLoading: projectsLoading } = useProjects(slug);
+  const { data: products, isLoading: productsLoading } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
 
-  const isLoading = orgLoading || projectsLoading;
+  const { data: projects, isLoading: projectsLoading } = useProjects(
+    slug,
+    productSlug,
+  );
+
+  const isLoading = orgLoading || productsLoading || projectsLoading;
 
   const totalEvents =
     projects?.reduce((acc, p) => acc + (p._count?.events ?? 0), 0) ?? 0;

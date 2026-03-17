@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,7 +37,6 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import {
   AlertTriangle,
-  Badge,
   Building2,
   CheckCircle,
   CheckCircle2,
@@ -50,6 +50,7 @@ import { useEffect, useState } from "react";
 // ─── General Tab ──────────────────────────────────────────────────────────────
 
 function GeneralTab({ slug }: { slug: string }) {
+  const router = useRouter();
   const { data: org, isLoading } = useOrganisation(slug);
   const updateOrg = useUpdateOrganisation(slug);
   const uploadLogo = useUploadOrgLogo(slug);
@@ -68,12 +69,18 @@ function GeneralTab({ slug }: { slug: string }) {
   }, [org]);
 
   const handleSave = async () => {
-    await updateOrg.mutateAsync({
+    const updated = await updateOrg.mutateAsync({
       name: name.trim(),
       slug: orgSlug.trim(),
     });
+
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+
+    // Redirect if slug changed
+    if (updated.slug !== slug) {
+      router.replace(`/${updated.slug}/settings`);
+    }
   };
 
   if (isLoading) return <Skeleton className="h-64" />;
@@ -305,11 +312,19 @@ function BillingTab({ slug }: { slug: string }) {
               </div>
               <p className="text-xs text-muted-foreground">
                 {plan === "free" &&
-                  "1 project · 1,000 events/month · manual insights only"}
+                  "1 project · 10,000 events/month · manual insights only"}
                 {plan === "pro" &&
-                  "Unlimited projects · 100,000 events/month · scheduled AI insights"}
+                  "Unlimited projects · unlimited events · scheduled AI insights"}
+                {plan === "studio_starter" &&
+                  "1 product · 5 projects · unlimited events · 15 members"}
+                {plan === "studio_growth" &&
+                  "1 product · 15 projects · unlimited events · 15 members"}
+                {plan === "studio_scale" &&
+                  "1 product · 30 projects · unlimited events · 15 members"}
+                {plan === "studio_unlimited" &&
+                  "1 product · unlimited projects · unlimited events · 15 members"}
                 {plan === "enterprise" &&
-                  "Unlimited everything · custom retention · dedicated support"}
+                  "Unlimited products & projects · custom retention · dedicated support"}
               </p>
             </div>
 
@@ -323,7 +338,7 @@ function BillingTab({ slug }: { slug: string }) {
               </Button>
             )}
 
-            {plan === "pro" && (
+            {(plan === "pro" || plan.startsWith("studio")) && (
               <Button
                 variant="outline"
                 onClick={() => portal.mutate()}

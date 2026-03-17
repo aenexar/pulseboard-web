@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateProject } from "@/hooks";
+import { useCreateProject, useProducts } from "@/hooks";
 import { useOrganisations } from "@/hooks/organisations/useOrganisations";
 import { useOnboardingStore } from "@/store/onboarding.store";
 import { cn } from "@/lib/utils";
@@ -28,18 +28,26 @@ export default function OnboardingProjectPage() {
   const { data: orgs } = useOrganisations();
   const personalOrg = orgs?.[0];
 
-  const createProject = useCreateProject(personalOrg?.slug ?? "");
+  // Auto-resolve default product
+  const { data: products } = useProducts(personalOrg?.slug ?? "");
+  const defaultProduct = products?.[0];
+
+  const createProject = useCreateProject(
+    personalOrg?.slug ?? "",
+    defaultProduct?.slug ?? "",
+  );
 
   const [name, setName] = useState("");
   const [framework, setFramework] = useState<Framework | "">("");
 
   const handleCreate = async () => {
-    if (!name.trim() || !personalOrg) return;
+    if (!name.trim() || !personalOrg || !defaultProduct) return;
 
     const project = await createProject.mutateAsync(name.trim());
 
     setProject(
       personalOrg.slug,
+      defaultProduct.slug,
       project.id,
       project.apiKey,
       (framework || "react-native-cli") as Framework,

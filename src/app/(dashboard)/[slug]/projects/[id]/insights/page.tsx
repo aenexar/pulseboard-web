@@ -9,6 +9,7 @@ import {
   useTriggerInsights,
   useMarkInsightRead,
   useAiConfig,
+  useProducts,
 } from "@/hooks";
 import { Insight, InsightSeverity } from "@/types";
 import {
@@ -194,10 +195,21 @@ export default function InsightsPage() {
   const slug = params?.slug as string;
   const id = params?.id as string;
 
-  const { data: insights, isLoading: insightsLoading } = useInsights(slug, id);
-  const { data: aiConfig, isLoading: configLoading } = useAiConfig(slug, id);
-  const triggerInsights = useTriggerInsights(slug, id);
-  const markRead = useMarkInsightRead(slug, id);
+  const { data: products } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
+
+  const { data: insights, isLoading: insightsLoading } = useInsights(
+    slug,
+    productSlug,
+    id,
+  );
+  const { data: aiConfig, isLoading: configLoading } = useAiConfig(
+    slug,
+    productSlug,
+    id,
+  );
+  const triggerInsights = useTriggerInsights(slug, productSlug, id);
+  const markRead = useMarkInsightRead(slug, productSlug, id);
 
   const isLoading = insightsLoading || configLoading;
 

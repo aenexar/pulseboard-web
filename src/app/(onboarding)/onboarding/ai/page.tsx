@@ -11,14 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpsertAiConfig } from "@/hooks";
-import { useOnboardingStore } from "@/store/onboarding.store";
 import { cn } from "@/lib/utils";
+import { useOnboardingStore } from "@/store/onboarding.store";
 import {
   AIModel,
   AIProvider,
+  MODEL_LABELS,
   PROVIDER_LABELS,
   PROVIDER_MODELS,
-  MODEL_LABELS,
 } from "@/types";
 import { Brain, ChevronRight, Eye, EyeOff, SkipForward } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -26,9 +26,13 @@ import { useEffect, useState } from "react";
 
 export default function OnboardingAIPage() {
   const router = useRouter();
-  const { slug, projectId } = useOnboardingStore();
+  const { slug, productSlug, projectId } = useOnboardingStore();
 
-  const upsertConfig = useUpsertAiConfig(slug ?? "", projectId ?? "");
+  const upsertConfig = useUpsertAiConfig(
+    slug ?? "",
+    productSlug ?? "",
+    projectId ?? "",
+  );
 
   const [provider, setProvider] = useState<AIProvider>("anthropic");
   const [model, setModel] = useState<AIModel>("claude-sonnet-4-5");
