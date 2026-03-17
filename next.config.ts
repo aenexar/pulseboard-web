@@ -6,14 +6,15 @@ const nextConfig: NextConfig = {
   output: "standalone",
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.r2.dev", // R2 public subdomain
-      },
-      {
-        protocol: "https",
-        hostname: "*.r2.cloudflarestorage.com", // R2 storage endpoint
-      },
+      // R2 Cloudflare
+      { protocol: "https", hostname: "*.r2.dev" },
+      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
+      // GitHub avatars
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      // Google avatars
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      // Generic Google user content
+      { protocol: "https", hostname: "*.googleusercontent.com" },
     ],
   },
 };
