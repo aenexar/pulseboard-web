@@ -9,7 +9,7 @@ const PUBLIC_ROUTES = [
   "/support",
   "/login",
   "/register",
-  "/auth/callback", // ← add this
+  "/callback", // ← add this
   "/invite/:token",
 ];
 
