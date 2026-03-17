@@ -6,6 +6,11 @@ const PUBLIC_ROUTES = [
   "/sdks",
   "/terms-and-conditions",
   "/privacy-policy",
+  "/support",
+  "/login",
+  "/register",
+  "/auth/callback", // ← add this
+  "/invite/:token",
 ];
 
 const AUTH_ROUTES = ["/login", "/register"];
