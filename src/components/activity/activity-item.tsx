@@ -1,15 +1,11 @@
+import { ActivityLog, UserActivityLog } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { ActivityLog, UserActivityLog } from "@/types";
-import { formatDistanceToNow } from "date-fns";
 import {
   Brain,
   Building2,
-  Camera,
   FolderKanban,
   GitBranch,
-  Key,
-  Lock,
   LogIn,
   LogOut,
   Mail,
@@ -19,7 +15,12 @@ import {
   UserCheck,
   UserMinus,
   UserPlus,
+  Key,
+  Camera,
+  Lock,
 } from "lucide-react";
+import Image from "next/image";
+import { formatDistanceToNow } from "date-fns";
 
 // ─── Action config ────────────────────────────────────────────────────────────
 
@@ -208,27 +209,36 @@ export function OrgActivityItem({ item }: { item: ActivityLog }) {
   const Icon = config.icon;
 
   return (
-    <div className="flex items-start gap-3 py-3">
+    <div className="flex items-center gap-3 py-4">
       {/* Actor avatar */}
+
+      <div
+        className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center",
+          config.bg,
+        )}
+      >
+        <Icon className={cn("w-4 h-4", config.color)} />
+      </div>
       <div className="relative shrink-0">
         <Avatar className="w-8 h-8">
-          <AvatarFallback className="bg-accent text-accent-foreground text-xs">
-            {(item.actorName ?? "?").slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        {/* Action icon badge */}
-        <div
-          className={cn(
-            "absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center",
-            config.bg,
+          {item.actorAvatar ? (
+            <Image
+              src={item.actorAvatar}
+              alt={item.actorName ?? ""}
+              fill
+              className="object-cover rounded-full"
+            />
+          ) : (
+            <AvatarFallback className="bg-accent text-accent-foreground text-xs">
+              {(item.actorName ?? "?").slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           )}
-        >
-          <Icon className={cn("w-2.5 h-2.5", config.color)} />
-        </div>
+        </Avatar>
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0">
         <p className="text-sm text-foreground leading-snug">
           <span className="font-semibold">{item.actorName ?? "System"}</span>{" "}
           <span className="text-muted-foreground">{config.label(item)}</span>
