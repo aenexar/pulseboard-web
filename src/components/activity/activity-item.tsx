@@ -1,11 +1,15 @@
-import { ActivityLog, UserActivityLog } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { ActivityLog, UserActivityLog } from "@/types";
+import { formatDistanceToNow } from "date-fns";
 import {
   Brain,
   Building2,
+  Camera,
   FolderKanban,
   GitBranch,
+  Key,
+  Lock,
   LogIn,
   LogOut,
   Mail,
@@ -15,12 +19,7 @@ import {
   UserCheck,
   UserMinus,
   UserPlus,
-  Key,
-  Camera,
-  Lock,
 } from "lucide-react";
-import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
 
 // ─── Action config ────────────────────────────────────────────────────────────
 
@@ -213,18 +212,9 @@ export function OrgActivityItem({ item }: { item: ActivityLog }) {
       {/* Actor avatar */}
       <div className="relative shrink-0">
         <Avatar className="w-8 h-8">
-          {item.actorAvatar ? (
-            <Image
-              src={item.actorAvatar}
-              alt={item.actorName ?? ""}
-              fill
-              className="object-cover rounded-full"
-            />
-          ) : (
-            <AvatarFallback className="bg-accent text-accent-foreground text-xs">
-              {(item.actorName ?? "?").slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          )}
+          <AvatarFallback className="bg-accent text-accent-foreground text-xs">
+            {(item.actorName ?? "?").slice(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         {/* Action icon badge */}
         <div

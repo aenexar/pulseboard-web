@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -120,6 +120,10 @@ export function Navbar() {
                 className="flex items-center gap-2 px-2 h-9 hover:bg-accent"
               >
                 <Avatar className="w-7 h-7">
+                  <AvatarImage
+                    src={user?.avatarUrl ?? undefined}
+                    alt={user?.name ?? ""}
+                  />
                   <AvatarFallback className="bg-brand/10 text-brand text-xs font-semibold">
                     {user?.name?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -132,13 +136,24 @@ export function Navbar() {
 
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user?.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </p>
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="w-8 h-8 shrink-0">
+                    <AvatarImage
+                      src={user?.avatarUrl ?? undefined}
+                      alt={user?.name ?? ""}
+                    />
+                    <AvatarFallback className="bg-brand/10 text-brand text-xs font-semibold">
+                      {user?.name?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
+                  </div>
                 </div>
               </DropdownMenuLabel>
 

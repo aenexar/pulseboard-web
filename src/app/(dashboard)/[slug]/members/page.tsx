@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,6 +107,10 @@ function MemberRow({
   return (
     <div className="flex items-center gap-4 py-3">
       <Avatar className="w-9 h-9 shrink-0">
+        <AvatarImage
+          src={member.user.avatarUrl ?? undefined}
+          alt={member.user.name}
+        />
         <AvatarFallback className="bg-accent text-accent-foreground text-xs">
           {member.user.name.slice(0, 2).toUpperCase()}
         </AvatarFallback>

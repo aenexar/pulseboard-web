@@ -61,6 +61,7 @@ export type OrgMember = {
     id: string;
     name: string;
     email: string;
+    avatarUrl: string | null; // ← add this
   };
 };
 

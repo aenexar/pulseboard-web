@@ -28,22 +28,21 @@ function CallbackHandler() {
     tokenUtils.set(token);
 
     // Fetch user profile to populate auth store
-    api
-      .get("/profile")
-      .then((res) => {
-        const user = res.data.data;
-        setAuth(user, token);
+    api.get("/profile").then(async (res) => {
+      const user = res.data.data;
+      setAuth(user, token);
 
-        // New OAuth user — redirect to onboarding
-        if (!user.onboardingCompletedAt && !user.onboardingDismissedAt) {
-          router.replace("/onboarding");
-        } else {
-          router.replace("/dashboard");
-        }
-      })
-      .catch(() => {
-        router.replace("/login?error=auth_failed");
-      });
+      // Ensure lastVisitedOrgSlug is synced
+      if (user.lastVisitedOrgSlug) {
+        await api.patch("/auth/last-org", { slug: user.lastVisitedOrgSlug });
+      }
+
+      if (!user.onboardingCompletedAt && !user.onboardingDismissedAt) {
+        router.replace("/onboarding");
+      } else {
+        router.replace("/dashboard");
+      }
+    });
   }, [searchParams, router, setAuth]);
 
   return (
