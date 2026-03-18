@@ -16,3 +16,4 @@ export * from "./github";
 
 // Standalone hooks
 export * from "./useRealtimeEvents";
+export * from "./useCooldown";

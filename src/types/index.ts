@@ -8,7 +8,9 @@ export type User = {
   lastVisitedOrgSlug: string | null;
   onboardingCompletedAt: string | null;
   onboardingDismissedAt: string | null;
-  hasPassword?: boolean; // present on profile endpoint only
+  emailVerifiedAt: string | null;
+  emailVerificationSource: string | null;
+  hasPassword?: boolean;
 };
 
 export type Device = {

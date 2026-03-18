@@ -13,6 +13,9 @@ const PUBLIC_ROUTES = [
   "/invite/:token",
   "/forgot-password",
   "/reset-password",
+  "/verify-email",
+  "/verify-email/success",
+  "/verify-email/error",
 ];
 
 const AUTH_ROUTES = ["/login", "/register"];

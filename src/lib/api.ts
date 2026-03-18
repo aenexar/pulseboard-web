@@ -185,3 +185,7 @@ export const passwordResetRoutes = {
   validate: (token: string) => `/auth/reset-password/${token}`,
   reset: () => `/auth/reset-password`,
 };
+
+export const verificationRoutes = {
+  resend: () => `/auth/verify-email/resend`,
+};

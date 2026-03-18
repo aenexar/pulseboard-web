@@ -3,18 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useForgotPassword } from "@/hooks";
+import { useCooldown, useForgotPassword } from "@/hooks";
 import { AlertTriangle, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
   const forgotPassword = useForgotPassword();
+  const cooldown = useCooldown(60);
   const [email, setEmail] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    forgotPassword.mutate(email);
+    forgotPassword.mutate(email, {
+      onSuccess: () => cooldown.start(),
+    });
   };
 
   return (
@@ -85,10 +88,18 @@ export default function ForgotPasswordPage() {
 
             <Button
               type="submit"
-              disabled={!email.trim() || forgotPassword.isPending}
+              disabled={
+                !email.trim() ||
+                forgotPassword.isPending ||
+                cooldown.isOnCooldown
+              }
               className="w-full bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
             >
-              {forgotPassword.isPending ? "Sending..." : "Send reset link"}
+              {forgotPassword.isPending
+                ? "Sending..."
+                : cooldown.isOnCooldown
+                  ? `Resend in ${cooldown.remaining}s`
+                  : "Send reset link"}
             </Button>
 
             <Link href="/login">
