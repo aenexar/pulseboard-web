@@ -189,3 +189,11 @@ export const passwordResetRoutes = {
 export const verificationRoutes = {
   resend: () => `/auth/verify-email/resend`,
 };
+
+export const twoFactorRoutes = {
+  status: () => `/profile/2fa/status`,
+  setup: () => `/profile/2fa/setup`,
+  enable: () => `/profile/2fa/enable`,
+  disable: () => `/profile/2fa/disable`,
+  regenerateRecovery: () => `/profile/2fa/recovery-codes/regenerate`,
+};

@@ -13,6 +13,7 @@ export * from "./products";
 export * from "./analytics";
 export * from "./connections";
 export * from "./github";
+export * from "./two-factor";
 
 // Standalone hooks
 export * from "./useRealtimeEvents";
