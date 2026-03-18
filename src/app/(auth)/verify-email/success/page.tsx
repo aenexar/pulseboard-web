@@ -4,15 +4,18 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useProfile } from "@/hooks";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function VerifyEmailSuccessPage() {
-  const queryClient = useQueryClient();
+  const { refetch } = useProfile();
+  const updateUser = useAuthStore((s) => s.updateUser);
 
   useEffect(() => {
-    // Refresh profile so emailVerifiedAt updates in the store
-    queryClient.invalidateQueries({ queryKey: ["profile"] });
-  }, [queryClient]);
+    refetch().then(({ data }) => {
+      if (data) updateUser(data);
+    });
+  }, [refetch, updateUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-background">

@@ -1,30 +1,27 @@
 "use client";
 
-import { useAuthStore } from "@/store/auth.store";
-import { useCooldown, useResendVerification } from "@/hooks";
-import { AlertTriangle, X, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useCooldown, useProfile, useResendVerification } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { AlertTriangle, Mail, X } from "lucide-react";
+import { useState } from "react";
 
 export function EmailVerificationBanner() {
-  const user = useAuthStore((s) => s.user);
+  const { data: profile } = useProfile();
   const resend = useResendVerification();
   const cooldown = useCooldown(60);
-
   const [dismissed, setDismissed] = useState(false);
-
-  // Don't show if verified, dismissed, or OAuth user
-  if (!user) return null;
-  if (user.emailVerifiedAt) return null;
-  if (user.emailVerificationSource?.startsWith("oauth_")) return null;
-  if (dismissed) return null;
 
   const handleResend = () => {
     resend.mutate(undefined, {
       onSuccess: () => cooldown.start(),
     });
   };
+
+  if (!profile) return null;
+  if (profile.emailVerifiedAt) return null;
+  if (profile.emailVerificationSource?.startsWith("oauth_")) return null;
+  if (dismissed) return null;
 
   return (
     <div
@@ -46,7 +43,7 @@ export function EmailVerificationBanner() {
           size="sm"
           onClick={handleResend}
           disabled={resend.isPending || cooldown.isOnCooldown}
-          className="border-yellow-500/30 hover:bg-yellow-500/10 text-yellow-600"
+          className="border-yellow-500/30 hover:bg-yellow-500/10 text-yellow-600 hover:text-yellow-700"
         >
           <Mail className="w-3.5 h-3.5 mr-1.5" />
           {resend.isPending
