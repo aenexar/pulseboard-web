@@ -179,3 +179,9 @@ export const githubRoutes = {
   install: (slug: string) => `/github/install/${slug}`,
   repos: (slug: string) => `/organisations/${slug}/github/repos`,
 };
+
+export const passwordResetRoutes = {
+  request: () => `/auth/forgot-password`,
+  validate: (token: string) => `/auth/reset-password/${token}`,
+  reset: () => `/auth/reset-password`,
+};

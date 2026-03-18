@@ -340,7 +340,7 @@ function RegisterForm() {
             <Button
               type="submit"
               disabled={register.isPending}
-              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
+              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
             >
               {register.isPending ? "Creating account..." : "Create account"}
             </Button>

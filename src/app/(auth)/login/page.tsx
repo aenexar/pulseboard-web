@@ -291,7 +291,15 @@ function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
@@ -310,7 +318,7 @@ function LoginForm() {
             <Button
               type="submit"
               disabled={login.isPending}
-              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold h-10"
+              className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-semibold"
             >
               {login.isPending ? "Signing in..." : "Sign in"}
             </Button>
