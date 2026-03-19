@@ -31,7 +31,10 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    if (error.response?.status === 401 && !original._retry) {
+    // Don't redirect on 2FA verification failures
+    const is2FARoute = original?.url?.includes("/auth/verify-2fa");
+
+    if (error.response?.status === 401 && !original._retry && !is2FARoute) {
       original._retry = true;
 
       try {
@@ -134,6 +137,7 @@ export const authRoutes = {
   lastOrg: () => `/auth/last-org`,
   completeOnboarding: () => `/auth/complete-onboarding`,
   dismissOnboarding: () => `/auth/dismiss-onboarding`,
+  verify2FA: () => `/auth/verify-2fa`,
 };
 
 export const uploadRoutes = {
@@ -196,4 +200,13 @@ export const twoFactorRoutes = {
   enable: () => `/profile/2fa/enable`,
   disable: () => `/profile/2fa/disable`,
   regenerateRecovery: () => `/profile/2fa/recovery-codes/regenerate`,
+};
+
+export const passkeyRoutes = {
+  registrationOptions: () => `/profile/passkeys/registration-options`,
+  verifyRegistration: () => `/profile/passkeys/verify-registration`,
+  authOptions: () => `/auth/passkey/options`,
+  verifyAuth: () => `/auth/passkey/verify`,
+  list: () => `/profile/passkeys`,
+  delete: (id: string) => `/profile/passkeys/${id}`,
 };

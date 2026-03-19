@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
   "/verify-email",
   "/verify-email/success",
   "/verify-email/error",
+  "/verify-2fa",
 ];
 
 const AUTH_ROUTES = ["/login", "/register"];

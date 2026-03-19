@@ -3,12 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLogin } from "@/hooks";
+import { useLogin, usePasskeyLogin } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   Activity,
   AlertTriangle,
   BarChart2,
+  Fingerprint,
   Lightbulb,
   Shield,
 } from "lucide-react";
@@ -185,6 +186,8 @@ function LoginForm() {
   const login = useLogin();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const passkeyLogin = usePasskeyLogin();
+
   const from = searchParams.get("from");
   const urlError = searchParams.get("error");
 
@@ -203,11 +206,23 @@ function LoginForm() {
     return null;
   })();
 
+  const handlePasskeyLogin = () => {
+    passkeyLogin.mutate(form.email || undefined, {
+      onSuccess: () => router.replace(from ?? "/dashboard"),
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setOauthError(null);
     login.mutate(form, {
-      onSuccess: () => router.replace(from ?? "/dashboard"),
+      onSuccess: (result) => {
+        if (result.require2FA) {
+          router.replace(`/verify-2fa?token=${result.challengeToken}`);
+          return;
+        }
+        router.replace(from ?? "/dashboard");
+      },
       onError: (err: unknown) => {
         const axiosErr = err as {
           response?: { data?: { code?: string; providers?: string[] } };
@@ -253,6 +268,18 @@ function LoginForm() {
               Continue with Google
             </Button>
           </a>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full gap-3"
+            onClick={handlePasskeyLogin}
+            disabled={passkeyLogin.isPending}
+          >
+            <Fingerprint className="w-4 h-4" />
+            {passkeyLogin.isPending
+              ? "Authenticating..."
+              : "Sign in with passkey"}
+          </Button>
         </div>
 
         {/* Divider */}
