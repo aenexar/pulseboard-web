@@ -210,3 +210,10 @@ export const passkeyRoutes = {
   list: () => `/profile/passkeys`,
   delete: (id: string) => `/profile/passkeys/${id}`,
 };
+
+export const logRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/logs`,
+  stats: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/logs/stats`,
+};

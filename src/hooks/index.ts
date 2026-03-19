@@ -15,6 +15,7 @@ export * from "./connections";
 export * from "./github";
 export * from "./two-factor";
 export * from "./passkeys";
+export * from "./logs";
 
 // Standalone hooks
 export * from "./useRealtimeEvents";
