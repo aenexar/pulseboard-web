@@ -217,3 +217,26 @@ export const logRoutes = {
   stats: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/logs/stats`,
 };
+
+export const feedbackRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback`,
+  stats: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/stats`,
+  updateStatus: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    feedbackId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
+};
+
+export const releaseRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/releases`,
+  create: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/releases`,
+  delete: (slug: string, productSlug: string, id: string, releaseId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/releases/${releaseId}`,
+};

@@ -11,8 +11,10 @@ import {
   FolderKanban,
   LayoutDashboard,
   Lightbulb,
+  MessageSquare,
   ScrollText,
   Settings,
+  Tag,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,9 +50,19 @@ function projectNav(slug: string, projectId: string): NavItem[] {
       icon: BarChart2,
     },
     {
+      href: `/${slug}/projects/${projectId}/releases`,
+      label: "Releases",
+      icon: Tag,
+    },
+    {
       href: `/${slug}/projects/${projectId}/logs`,
       label: "Logs",
       icon: ScrollText,
+    },
+    {
+      href: `/${slug}/projects/${projectId}/feedback`,
+      label: "Feedback",
+      icon: MessageSquare,
     },
     {
       href: `/${slug}/projects/${projectId}/insights`,
