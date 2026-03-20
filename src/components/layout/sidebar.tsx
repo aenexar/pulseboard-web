@@ -1,165 +1,547 @@
 "use client";
 
+import { FrameworkIcon } from "@/components/framework-icons";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useOrganisations } from "@/hooks/organisations/useOrganisations";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useOrganisations, useProducts, useProjects } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
+import { Framework } from "@/types";
 import {
   Activity,
+  AlertTriangle,
   BarChart2,
-  ChevronLeft,
+  Brain,
+  ChevronDown,
+  ChevronRight,
+  CreditCard,
   FolderKanban,
+  GitBranch,
   LayoutDashboard,
   Lightbulb,
+  Menu,
   MessageSquare,
+  Monitor,
   ScrollText,
   Settings,
+  Shield,
   Tag,
+  User,
   Users,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { OrgSwitcher } from "./org-switcher";
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ElementType;
-};
+// ─── Persist expanded state ────────────────────────────────────────────────────
 
-function globalNav(slug: string): NavItem[] {
-  return [
-    { href: `/${slug}`, label: "Overview", icon: LayoutDashboard },
-    { href: `/${slug}/projects`, label: "Projects", icon: FolderKanban },
-    { href: `/${slug}/activity`, label: "Activity", icon: Activity },
-    { href: `/${slug}/members`, label: "Members", icon: Users },
-    { href: `/${slug}/settings`, label: "Settings", icon: Settings },
-  ];
+function useExpandedProjects() {
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const stored = localStorage.getItem("pb_expanded_projects");
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const toggle = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        // Collapse all others — only one project open at a time
+        next.clear();
+        next.add(id);
+      }
+      localStorage.setItem("pb_expanded_projects", JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  return { expanded, toggle };
 }
 
-function projectNav(slug: string, projectId: string): NavItem[] {
-  return [
-    {
-      href: `/${slug}/projects/${projectId}`,
-      label: "Overview",
-      icon: LayoutDashboard,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/analytics`,
-      label: "Analytics",
-      icon: BarChart2,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/releases`,
-      label: "Releases",
-      icon: Tag,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/logs`,
-      label: "Logs",
-      icon: ScrollText,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/feedback`,
-      label: "Feedback",
-      icon: MessageSquare,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/insights`,
-      label: "Insights",
-      icon: Lightbulb,
-    },
-    {
-      href: `/${slug}/projects/${projectId}/settings`,
-      label: "Settings",
-      icon: Settings,
-    },
-  ];
-}
+// ─── Nav link ──────────────────────────────────────────────────────────────────
 
 function NavLink({
   href,
   label,
   icon: Icon,
   active,
-}: NavItem & { active: boolean }) {
+  indent = 0,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  active: boolean;
+  indent?: number;
+  onClick?: () => void;
+}) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+        "flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
         active
           ? "bg-brand/10 text-brand"
           : "text-muted-foreground hover:text-foreground hover:bg-accent",
+        indent === 1 && "pl-7",
+        indent === 2 && "pl-10",
       )}
     >
-      <Icon className="w-4 h-4 shrink-0" />
-      {label}
+      <Icon className="w-3.5 h-3.5 shrink-0" />
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
 
-export function Sidebar() {
+// ─── Section label ─────────────────────────────────────────────────────────────
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+      {label}
+    </p>
+  );
+}
+
+// ─── Project nav ───────────────────────────────────────────────────────────────
+
+function ProjectNavItem({
+  slug,
+  project,
+  expanded,
+  onToggle,
+  pathname,
+  onNavigate,
+}: {
+  slug: string;
+  project: { id: string; name: string; framework: string | null };
+  expanded: boolean;
+  onToggle: () => void;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const base = `/${slug}/projects/${project.id}`;
+  const isActive = pathname.startsWith(base);
+  const settingsBase = `${base}/settings`;
+  const isSettingsOpen = pathname.startsWith(settingsBase);
+  const [settingsOpen, setSettingsOpen] = useState(isSettingsOpen);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (!expanded) {
+      timeout = setTimeout(() => {
+        setSettingsOpen(false);
+      }, 0);
+    }
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [expanded]);
+
+  const projectNavItems = [
+    { href: base, label: "Overview", icon: LayoutDashboard },
+    { href: `${base}/analytics`, label: "Analytics", icon: BarChart2 },
+    { href: `${base}/releases`, label: "Releases", icon: Tag },
+    { href: `${base}/logs`, label: "Logs", icon: ScrollText },
+    { href: `${base}/feedback`, label: "Feedback", icon: MessageSquare },
+    { href: `${base}/insights`, label: "Insights", icon: Lightbulb },
+  ];
+
+  const settingsItems = [
+    { href: `${settingsBase}/details`, label: "Details", icon: Settings },
+    { href: `${settingsBase}/ai`, label: "AI Config", icon: Brain },
+    {
+      href: `${settingsBase}/repository`,
+      label: "Repository",
+      icon: GitBranch,
+    },
+    { href: `${settingsBase}/security`, label: "Security", icon: Shield },
+  ];
+
+  return (
+    <div>
+      {/* Project header — clickable to expand */}
+      <button
+        onClick={onToggle}
+        className={cn(
+          "w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+          isActive
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent",
+        )}
+      >
+        {project.framework && (
+          <FrameworkIcon
+            framework={project.framework as Framework}
+            size={14}
+            className="shrink-0"
+          />
+        )}
+        <span className="flex-1 truncate text-left">{project.name}</span>
+        {expanded ? (
+          <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+        ) : (
+          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+        )}
+      </button>
+
+      {/* Project sub-nav */}
+      {expanded && (
+        <div className="mt-0.5 space-y-0.5">
+          {projectNavItems.map((item) => (
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              icon={item.icon}
+              active={
+                item.href === base
+                  ? pathname === base
+                  : pathname.startsWith(item.href)
+              }
+              indent={1}
+              onClick={onNavigate}
+            />
+          ))}
+
+          {/* Settings collapsible */}
+          <button
+            onClick={() => setSettingsOpen((s) => !s)}
+            className={cn(
+              "w-full flex items-center gap-2.5 pl-7 pr-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              isSettingsOpen
+                ? "bg-brand/10 text-brand"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent",
+            )}
+          >
+            <Settings className="w-3.5 h-3.5 shrink-0" />
+            <span className="flex-1 text-left">Settings</span>
+            {settingsOpen ? (
+              <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+            )}
+          </button>
+
+          {settingsOpen && (
+            <div className="space-y-0.5">
+              {settingsItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  icon={item.icon}
+                  active={pathname.startsWith(item.href)}
+                  indent={2}
+                  onClick={onNavigate}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Sidebar content ───────────────────────────────────────────────────────────
+
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const params = useParams();
   const user = useAuthStore((s) => s.user);
+  const router = useRouter();
 
   const { data: orgs } = useOrganisations();
+  const slug =
+    (params?.slug as string | undefined) ??
+    user?.lastVisitedOrgSlug ??
+    orgs?.[0]?.slug ??
+    "";
 
-  const slug = params?.slug as string | undefined;
-  const projectId = params?.id as string | undefined;
+  const { data: products } = useProducts(slug);
+  const productSlug = products?.[0]?.slug ?? "";
+  const isMultiProduct = (products?.length ?? 0) > 1;
 
-  const isProjectView = !!projectId;
-  const currentSlug = slug ?? user?.lastVisitedOrgSlug ?? orgs?.[0]?.slug ?? "";
+  const { data: projects } = useProjects(slug, productSlug);
+  const { expanded, toggle } = useExpandedProjects();
 
-  // Guard — don't render nav items with empty slug
-  const navItems = !currentSlug
-    ? []
-    : isProjectView
-      ? projectNav(currentSlug, projectId!)
-      : globalNav(currentSlug);
+  // Auto-expand current project
+  const currentProjectId = params?.id as string | undefined;
+  useEffect(() => {
+    if (currentProjectId && !expanded.has(currentProjectId)) {
+      toggle(currentProjectId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProjectId]);
+
+  const orgSettingsItems = [
+    { href: `/${slug}/settings/general`, label: "General", icon: Settings },
+    { href: `/${slug}/settings/billing`, label: "Billing", icon: CreditCard },
+    { href: `/${slug}/settings/danger`, label: "Danger", icon: AlertTriangle },
+  ];
+
+  const profileItems = [
+    { href: "/profile/general", label: "General", icon: User },
+    { href: "/profile/security", label: "Security", icon: Shield },
+    { href: "/profile/connections", label: "Connections", icon: Zap },
+    { href: "/profile/devices", label: "Devices", icon: Monitor },
+    { href: "/profile/activity", label: "Activity", icon: Activity },
+  ];
+
+  const isOrgSettingsOpen = pathname.startsWith(`/${slug}/settings`);
+  const isProfileOpen = pathname.startsWith("/profile");
+  const [orgSettingsExpanded, setOrgSettingsExpanded] =
+    useState(isOrgSettingsOpen);
+  const [profileExpanded, setProfileExpanded] = useState(isProfileOpen);
+
+  useEffect(() => {
+    if (isOrgSettingsOpen) setOrgSettingsExpanded(true);
+  }, [isOrgSettingsOpen]);
+  useEffect(() => {
+    if (isProfileOpen) setProfileExpanded(true);
+  }, [isProfileOpen]);
+
+  if (!slug) return null;
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col w-64 min-h-screen",
-        "bg-sidebar border-r border-sidebar-border",
-        "px-4 py-6",
-      )}
-    >
-      {/* Org Switcher */}
-      <div className="mb-6">
-        <OrgSwitcher orgs={orgs ?? []} currentSlug={currentSlug} />
+    <div className="flex flex-col h-full">
+      {/* Org switcher */}
+      <div className="px-4 pt-4 pb-3">
+        <OrgSwitcher orgs={orgs ?? []} currentSlug={slug} />
       </div>
 
-      {/* Back to projects — project view only */}
-      {isProjectView && (
-        <Link
-          href={`/${currentSlug}/projects`}
-          className="flex items-center gap-2 px-3 py-2 mb-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          All Projects
-        </Link>
-      )}
+      <Separator className="bg-sidebar-border" />
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-1 flex-1">
-        {navItems.map((item) => (
-          <NavLink key={item.href} {...item} active={pathname === item.href} />
-        ))}
+      {/* Main nav */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+        {/* Overview */}
+        <NavLink
+          href={`/${slug}`}
+          label="Overview"
+          icon={LayoutDashboard}
+          active={pathname === `/${slug}`}
+          onClick={onNavigate}
+        />
+
+        {/* Projects / Products */}
+        {!isMultiProduct ? (
+          <>
+            <SectionLabel label="Projects" />
+            <div className="space-y-0.5">
+              {projects?.map((project) => (
+                <ProjectNavItem
+                  key={project.id}
+                  slug={slug}
+                  project={project}
+                  expanded={expanded.has(project.id)}
+                  onToggle={() => toggle(project.id)}
+                  pathname={pathname}
+                  onNavigate={onNavigate}
+                />
+              ))}
+              {(projects?.length ?? 0) === 0 && (
+                <Link
+                  href={`/${slug}/projects`}
+                  onClick={onNavigate}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                >
+                  <FolderKanban className="w-3.5 h-3.5 shrink-0" />
+                  <span>All Projects</span>
+                </Link>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <SectionLabel label="Products" />
+            {products?.map((product) => (
+              <div key={product.id}>
+                <p className="px-3 py-1 text-xs font-semibold text-muted-foreground truncate">
+                  {product.name}
+                </p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Activity */}
+        <div className="pt-1">
+          <NavLink
+            href={`/${slug}/activity`}
+            label="Activity"
+            icon={Activity}
+            active={pathname === `/${slug}/activity`}
+            onClick={onNavigate}
+          />
+        </div>
+
+        {/* Members */}
+        <NavLink
+          href={`/${slug}/members`}
+          label="Members"
+          icon={Users}
+          active={pathname === `/${slug}/members`}
+          onClick={onNavigate}
+        />
+
+        {/* Settings — collapsible */}
+        <button
+          onClick={() => setOrgSettingsExpanded((s) => !s)}
+          className={cn(
+            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+            isOrgSettingsOpen
+              ? "bg-brand/10 text-brand"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent",
+          )}
+        >
+          <Settings className="w-3.5 h-3.5 shrink-0" />
+          <span className="flex-1 text-left">Settings</span>
+          {orgSettingsExpanded ? (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+          )}
+        </button>
+        {orgSettingsExpanded && (
+          <div className="space-y-0.5">
+            {orgSettingsItems.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={pathname.startsWith(item.href)}
+                indent={1}
+                onClick={onNavigate}
+              />
+            ))}
+          </div>
+        )}
       </nav>
 
-      {/* Bottom branding */}
-      <Separator className="bg-sidebar-border mb-4" />
-      <div className="px-2">
-        <div className="flex items-center gap-2">
+      <Separator className="bg-sidebar-border" />
+
+      {/* Profile — bottom persistent */}
+      <div className="px-3 py-3 space-y-0.5">
+        <button
+          onClick={() => setProfileExpanded((s) => !s)}
+          className={cn(
+            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+            isProfileOpen
+              ? "bg-brand/10 text-brand"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent",
+          )}
+        >
+          <Avatar className="w-5 h-5 shrink-0">
+            <AvatarImage
+              src={user?.avatarUrl ?? undefined}
+              alt={user?.name ?? ""}
+            />
+            <AvatarFallback className="text-[9px] bg-brand/10 text-brand">
+              {user?.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="flex-1 text-left truncate">{user?.name}</span>
+          {profileExpanded ? (
+            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+          )}
+        </button>
+
+        {profileExpanded && (
+          <div className="space-y-0.5">
+            {profileItems.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={pathname.startsWith(item.href)}
+                indent={1}
+                onClick={onNavigate}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Branding */}
+        <div className="flex items-center gap-2 px-3 pt-2">
           <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
           <span className="text-xs font-mono text-muted-foreground">
             PulseBoard
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Desktop sidebar ───────────────────────────────────────────────────────────
+
+function DesktopSidebar() {
+  return (
+    <aside
+      className={cn(
+        "hidden lg:flex flex-col w-64 min-h-screen shrink-0",
+        "bg-sidebar border-r border-sidebar-border",
+      )}
+    >
+      <SidebarContent />
     </aside>
+  );
+}
+
+// ─── Mobile sidebar ────────────────────────────────────────────────────────────
+
+function MobileSidebar() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="lg:hidden">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 left-4 z-50 lg:hidden"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          className="w-64 p-0 bg-sidebar border-sidebar-border"
+        >
+          <SidebarContent onNavigate={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+// ─── Export ────────────────────────────────────────────────────────────────────
+
+export function Sidebar() {
+  return (
+    <>
+      <DesktopSidebar />
+      <MobileSidebar />
+    </>
   );
 }

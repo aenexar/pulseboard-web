@@ -168,15 +168,6 @@ export function Navbar() {
                 </DropdownMenuItem>
               )}
 
-              <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
               <DropdownMenuItem
                 onClick={() => logout.mutate()}
                 className="text-destructive focus:text-destructive cursor-pointer"

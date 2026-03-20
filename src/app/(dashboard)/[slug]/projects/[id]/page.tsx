@@ -5,14 +5,13 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProject, useProducts, useProjectStats } from "@/hooks";
+import { useProducts, useProject, useProjectStats } from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
 import {
   Activity,
   AlertTriangle,
-  Clock,
   Copy,
   Play,
   Settings,
