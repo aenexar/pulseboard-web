@@ -1,30 +1,31 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useInsights,
-  useTriggerInsights,
-  useMarkInsightRead,
   useAiConfig,
+  useInsights,
+  useMarkInsightRead,
   useProducts,
+  useTriggerInsights,
 } from "@/hooks";
+import { cn } from "@/lib/utils";
 import { Insight, InsightSeverity } from "@/types";
 import {
-  AlertTriangle,
   AlertCircle,
-  Info,
-  Sparkles,
-  RefreshCw,
+  AlertTriangle,
+  Brain,
   CheckCheck,
   Clock,
+  Info,
+  RefreshCw,
   Repeat2,
-  Brain,
   Settings,
+  Shield,
+  Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
@@ -74,6 +75,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   network: "Network",
   release: "Release",
   user_behaviour: "User Behaviour",
+  security: "Security",
+};
+
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  security: Shield,
 };
 
 function groupByDay(insights: Insight[]): Record<string, Insight[]> {
@@ -98,7 +104,10 @@ function InsightCard({
   onMarkRead: (id: string) => void;
 }) {
   const severity = SEVERITY_CONFIG[insight.severity];
-  const Icon = severity.icon;
+  const CategoryIcon = CATEGORY_ICONS[insight.category];
+  const Icon = CategoryIcon ?? severity.icon;
+  const isSecurity = insight.category === "security";
+
   const firstSeen = new Date(insight.firstSeenAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -117,7 +126,9 @@ function InsightCard({
           <div
             className={cn(
               "flex items-center justify-center w-8 h-8 rounded-md shrink-0",
-              severity.className,
+              isSecurity
+                ? "text-purple-500 border-purple-500/30 bg-purple-500/10"
+                : severity.className,
             )}
           >
             <Icon className="w-4 h-4" />
@@ -135,7 +146,14 @@ function InsightCard({
                 >
                   {insight.title}
                 </span>
-                <Badge variant="outline" className="text-xs">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs",
+                    isSecurity &&
+                      "text-purple-500 border-purple-500/30 bg-purple-500/10",
+                  )}
+                >
                   {CATEGORY_LABELS[insight.category] ?? insight.category}
                 </Badge>
                 <Badge
@@ -189,7 +207,6 @@ function InsightCard({
     </Card>
   );
 }
-
 export default function InsightsPage() {
   const params = useParams();
   const slug = params?.slug as string;

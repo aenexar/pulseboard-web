@@ -204,7 +204,8 @@ export type InsightCategory =
   | "performance"
   | "network"
   | "release"
-  | "user_behaviour";
+  | "user_behaviour"
+  | "security";
 
 export type Insight = {
   id: string;
