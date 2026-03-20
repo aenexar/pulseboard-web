@@ -7,7 +7,7 @@ type Props = {
   value: string | number;
   icon: LucideIcon;
   trend?: string;
-  variant?: "default" | "error" | "success";
+  variant?: "default" | "error" | "success" | "danger";
 };
 
 export function StatsCard({
@@ -26,14 +26,23 @@ export function StatsCard({
         <Icon
           className={cn(
             "w-4 h-4",
-            variant === "error" && "text-destructive",
+            (variant === "error" || variant === "danger") && "text-destructive",
             variant === "success" && "text-brand",
             variant === "default" && "text-muted-foreground",
           )}
         />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
+        <div
+          className={cn(
+            "text-2xl font-bold",
+            (variant === "error" || variant === "danger") && "text-destructive",
+            variant === "success" && "text-brand",
+            variant === "default" && "text-foreground",
+          )}
+        >
+          {value}
+        </div>
         {trend && <p className="text-xs text-muted-foreground mt-1">{trend}</p>}
       </CardContent>
     </Card>

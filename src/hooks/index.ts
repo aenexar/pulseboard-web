@@ -17,6 +17,7 @@ export * from "./products";
 export * from "./profile";
 export * from "./projects";
 export * from "./releases";
+export * from "./sessions";
 export * from "./two-factor";
 
 // Standalone hooks

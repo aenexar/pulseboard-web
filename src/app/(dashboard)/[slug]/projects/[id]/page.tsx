@@ -1,14 +1,25 @@
 "use client";
 
 import { EventsFeed } from "@/components/dashboard/events-feed";
+import { StatsCard } from "@/components/dashboard/stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProject, useProducts } from "@/hooks";
+import { useProject, useProducts, useProjectStats } from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
-import { Copy, Play, Settings, Square, Trash2 } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Clock,
+  Copy,
+  Play,
+  Settings,
+  Square,
+  Timer,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -18,11 +29,14 @@ export default function ProjectPage() {
   const slug = params?.slug as string;
   const id = params?.id as string;
 
-  // Auto-resolve default product for solo orgs
   const { data: products } = useProducts(slug);
   const productSlug = products?.[0]?.slug ?? "";
-
   const { data: project, isLoading } = useProject(slug, productSlug, id);
+  const { data: stats, isLoading: statsLoading } = useProjectStats(
+    slug,
+    productSlug,
+    id,
+  );
   const { events, connected, enabled, start, stop, clearEvents } =
     useRealtimeEvents(id);
   const [copied, setCopied] = useState(false);
@@ -39,6 +53,11 @@ export default function ProjectPage() {
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-24" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-96" />
       </div>
     );
@@ -108,6 +127,52 @@ export default function ProjectPage() {
           <p className="text-xs text-brand mt-2">Copied to clipboard!</p>
         )}
       </div>
+
+      {/* Stats Cards */}
+      {statsLoading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+      ) : (
+        stats && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              title="Sessions (7d)"
+              value={stats.totalSessions.toLocaleString()}
+              icon={Activity}
+            />
+            <StatsCard
+              title="Crash Rate (7d)"
+              value={`${stats.crashRate}%`}
+              icon={AlertTriangle}
+              variant={
+                stats.crashRate === 0
+                  ? "success"
+                  : stats.crashRate < 2
+                    ? "default"
+                    : "danger"
+              }
+            />
+            <StatsCard
+              title="Errors (7d)"
+              value={stats.totalErrors.toLocaleString()}
+              icon={AlertTriangle}
+              variant={stats.totalErrors === 0 ? "success" : "default"}
+            />
+            <StatsCard
+              title="Avg Session"
+              value={
+                stats.avgSessionMinutes < 60
+                  ? `${stats.avgSessionMinutes}m`
+                  : `${Math.floor(stats.avgSessionMinutes / 60)}h ${stats.avgSessionMinutes % 60}m`
+              }
+              icon={Timer}
+            />
+          </div>
+        )
+      )}
 
       {/* Live Events Feed */}
       <div>

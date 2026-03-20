@@ -240,3 +240,16 @@ export const releaseRoutes = {
   delete: (slug: string, productSlug: string, id: string, releaseId: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/releases/${releaseId}`,
 };
+
+export const sessionAuditRoutes = {
+  list: () => `/profile/sessions`,
+  revoke: (id: string) => `/profile/sessions/${id}`,
+  revokeAll: () => `/profile/sessions`,
+};
+
+export const analyticsRoutes = {
+  sparklines: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/sparklines`,
+  stats: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/stats`,
+};

@@ -1,10 +1,16 @@
 "use client";
 
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { Sparkline } from "@/components/dashboard/sparkline";
 import { FrameworkIcon } from "@/components/framework-icons";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrganisation, useProducts, useProjects } from "@/hooks";
+import {
+  useOrganisation,
+  useProducts,
+  useProjects,
+  useSparklines,
+} from "@/hooks";
 import { FRAMEWORK_LABELS, Framework } from "@/types";
 import {
   Activity,
@@ -28,6 +34,7 @@ export default function OrgOverviewPage() {
     slug,
     productSlug,
   );
+  const { data: sparklines } = useSparklines(slug, productSlug);
 
   const isLoading = orgLoading || productsLoading || projectsLoading;
 
@@ -163,10 +170,15 @@ export default function OrgOverviewPage() {
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
               </div>
-              <div className="flex items-center justify-between mt-3">
+
+              {/* Sparkline + event count */}
+              <div className="flex items-end justify-between mt-3">
                 <p className="text-xs text-muted-foreground font-mono">
                   {project._count?.events ?? 0} events
                 </p>
+                {sparklines?.[project.id] && (
+                  <Sparkline data={sparklines[project.id]} />
+                )}
               </div>
             </Link>
           ))}
