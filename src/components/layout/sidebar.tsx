@@ -33,7 +33,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrgSwitcher } from "./org-switcher";
 
@@ -264,7 +264,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const params = useParams();
   const user = useAuthStore((s) => s.user);
-  const router = useRouter();
 
   const { data: orgs } = useOrganisations();
   const slug =
@@ -280,7 +279,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { data: projects } = useProjects(slug, productSlug);
   const { expanded, toggle } = useExpandedProjects();
 
-  // Auto-expand current project
   const currentProjectId = params?.id as string | undefined;
   useEffect(() => {
     if (currentProjectId && !expanded.has(currentProjectId)) {
@@ -303,19 +301,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     { href: "/profile/activity", label: "Activity", icon: Activity },
   ];
 
-  const isOrgSettingsOpen = pathname.startsWith(`/${slug}/settings`);
-  const isProfileOpen = pathname.startsWith("/profile");
-  const [orgSettingsExpanded, setOrgSettingsExpanded] =
-    useState(isOrgSettingsOpen);
-  const [profileExpanded, setProfileExpanded] = useState(isProfileOpen);
-
-  useEffect(() => {
-    if (isOrgSettingsOpen) setOrgSettingsExpanded(true);
-  }, [isOrgSettingsOpen]);
-  useEffect(() => {
-    if (isProfileOpen) setProfileExpanded(true);
-  }, [isProfileOpen]);
-
   if (!slug) return null;
 
   return (
@@ -327,7 +312,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <Separator className="bg-sidebar-border" />
 
-      {/* Main nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
         {/* Overview */}
         <NavLink
@@ -338,7 +322,39 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
         />
 
-        {/* Projects / Products */}
+        {/* Members */}
+        <NavLink
+          href={`/${slug}/members`}
+          label="Members"
+          icon={Users}
+          active={pathname === `/${slug}/members`}
+          onClick={onNavigate}
+        />
+
+        {/* Activity */}
+        <NavLink
+          href={`/${slug}/activity`}
+          label="Activity"
+          icon={Activity}
+          active={pathname === `/${slug}/activity`}
+          onClick={onNavigate}
+        />
+
+        {/* Org Settings — always visible, no collapse */}
+        <SectionLabel label="Settings" />
+        {orgSettingsItems.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            icon={item.icon}
+            active={pathname.startsWith(item.href)}
+            indent={1}
+            onClick={onNavigate}
+          />
+        ))}
+
+        {/* Projects */}
         {!isMultiProduct ? (
           <>
             <SectionLabel label="Projects" />
@@ -378,75 +394,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             ))}
           </>
         )}
-
-        {/* Activity */}
-        <div className="pt-1">
-          <NavLink
-            href={`/${slug}/activity`}
-            label="Activity"
-            icon={Activity}
-            active={pathname === `/${slug}/activity`}
-            onClick={onNavigate}
-          />
-        </div>
-
-        {/* Members */}
-        <NavLink
-          href={`/${slug}/members`}
-          label="Members"
-          icon={Users}
-          active={pathname === `/${slug}/members`}
-          onClick={onNavigate}
-        />
-
-        {/* Settings — collapsible */}
-        <button
-          onClick={() => setOrgSettingsExpanded((s) => !s)}
-          className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-            isOrgSettingsOpen
-              ? "bg-brand/10 text-brand"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent",
-          )}
-        >
-          <Settings className="w-3.5 h-3.5 shrink-0" />
-          <span className="flex-1 text-left">Settings</span>
-          {orgSettingsExpanded ? (
-            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-          ) : (
-            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-          )}
-        </button>
-        {orgSettingsExpanded && (
-          <div className="space-y-0.5">
-            {orgSettingsItems.map((item) => (
-              <NavLink
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icon={item.icon}
-                active={pathname.startsWith(item.href)}
-                indent={1}
-                onClick={onNavigate}
-              />
-            ))}
-          </div>
-        )}
       </nav>
 
       <Separator className="bg-sidebar-border" />
 
-      {/* Profile — bottom persistent */}
-      <div className="px-3 py-3 space-y-0.5">
-        <button
-          onClick={() => setProfileExpanded((s) => !s)}
-          className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-            isProfileOpen
-              ? "bg-brand/10 text-brand"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent",
-          )}
-        >
+      {/* Profile — always expanded, static list */}
+      <div className="p-3 space-y-0.5">
+        <div className="flex items-center gap-2.5 px-3 py-1.5">
           <Avatar className="w-5 h-5 shrink-0">
             <AvatarImage
               src={user?.avatarUrl ?? undefined}
@@ -456,29 +410,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               {user?.name?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="flex-1 text-left truncate">{user?.name}</span>
-          {profileExpanded ? (
-            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-          ) : (
-            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-          )}
-        </button>
+          <span className="text-sm font-medium text-foreground truncate">
+            {user?.name}
+          </span>
+        </div>
 
-        {profileExpanded && (
-          <div className="space-y-0.5">
-            {profileItems.map((item) => (
-              <NavLink
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icon={item.icon}
-                active={pathname.startsWith(item.href)}
-                indent={1}
-                onClick={onNavigate}
-              />
-            ))}
-          </div>
-        )}
+        {profileItems.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            icon={item.icon}
+            active={pathname.startsWith(item.href)}
+            onClick={onNavigate}
+          />
+        ))}
 
         {/* Branding */}
         <div className="flex items-center gap-2 px-3 pt-2">
@@ -491,7 +437,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     </div>
   );
 }
-
 // ─── Desktop sidebar ───────────────────────────────────────────────────────────
 
 function DesktopSidebar() {
