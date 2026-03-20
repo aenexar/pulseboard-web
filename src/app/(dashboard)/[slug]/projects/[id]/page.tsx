@@ -4,8 +4,14 @@ import { EventsFeed } from "@/components/dashboard/events-feed";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProducts, useProject, useProjectStats } from "@/hooks";
+import {
+  useProject,
+  useProducts,
+  useProjectStats,
+  useProjectChart,
+} from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
@@ -22,6 +28,46 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+
+// ─── Custom tooltip ────────────────────────────────────────────────────────────
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  valueKey,
+  unit = "",
+}: {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string | number;
+  valueKey: string;
+  unit?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-sm">
+      <p className="text-xs text-muted-foreground mb-0.5">{String(label)}</p>
+      <p className="text-sm font-semibold text-foreground">
+        {payload[0].value}
+        {unit} {valueKey}
+      </p>
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProjectPage() {
   const params = useParams();
@@ -36,6 +82,12 @@ export default function ProjectPage() {
     productSlug,
     id,
   );
+  const { data: chart, isLoading: chartLoading } = useProjectChart(
+    slug,
+    productSlug,
+    id,
+  );
+
   const { events, connected, enabled, start, stop, clearEvents } =
     useRealtimeEvents(id);
   const [copied, setCopied] = useState(false);
@@ -56,6 +108,10 @@ export default function ProjectPage() {
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
         </div>
         <Skeleton className="h-96" />
       </div>
@@ -92,7 +148,7 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/${slug}/projects/${id}/settings`}>
+          <Link href={`/${slug}/projects/${id}/settings/details`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="w-4 h-4" />
               Settings
@@ -127,7 +183,7 @@ export default function ProjectPage() {
         )}
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats cards */}
       {statsLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -169,6 +225,131 @@ export default function ProjectPage() {
               }
               icon={Timer}
             />
+          </div>
+        )
+      )}
+
+      {/* Charts */}
+      {chartLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
+        </div>
+      ) : (
+        chart && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Sessions chart */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Sessions — last 7 days
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={chart} barSize={20}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={30}
+                      allowDecimals={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => (
+                        <ChartTooltip
+                          active={active}
+                          payload={payload as unknown as { value: number }[]}
+                          label={label}
+                          valueKey="sessions"
+                        />
+                      )}
+                    />
+                    <Bar
+                      dataKey="sessions"
+                      fill="hsl(var(--brand))"
+                      radius={[3, 3, 0, 0]}
+                      opacity={0.85}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Crash rate chart */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Crash Rate % — last 7 days
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart data={chart}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={30}
+                      unit="%"
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => (
+                        <ChartTooltip
+                          active={active}
+                          payload={payload as unknown as { value: number }[]}
+                          label={label}
+                          valueKey="crash rate"
+                          unit="%"
+                        />
+                      )}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="crashRate"
+                      stroke="hsl(var(--destructive))"
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--destructive))", r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </div>
         )
       )}

@@ -252,4 +252,7 @@ export const analyticsRoutes = {
     `/organisations/${slug}/products/${productSlug}/projects/sparklines`,
   stats: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/stats`,
+  // Inside analyticsRoutes:
+  chart: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/chart`,
 };
