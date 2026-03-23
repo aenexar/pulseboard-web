@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useProject,
   useProducts,
-  useProjectStats,
+  useProject,
   useProjectChart,
+  useProjectStats,
 } from "@/hooks";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
@@ -29,18 +29,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  CartesianGrid,
 } from "recharts";
-
-// ─── Custom tooltip ────────────────────────────────────────────────────────────
 
 function ChartTooltip({
   active,
@@ -66,8 +64,6 @@ function ChartTooltip({
     </div>
   );
 }
-
-// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProjectPage() {
   const params = useParams();
