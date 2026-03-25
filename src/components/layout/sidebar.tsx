@@ -118,6 +118,7 @@ function SectionLabel({ label }: { label: string }) {
 
 function ProjectNavItem({
   slug,
+  productSlug,
   project,
   expanded,
   onToggle,
@@ -125,13 +126,14 @@ function ProjectNavItem({
   onNavigate,
 }: {
   slug: string;
+  productSlug: string;
   project: { id: string; name: string; framework: string | null };
   expanded: boolean;
   onToggle: () => void;
   pathname: string;
   onNavigate?: () => void;
 }) {
-  const base = `/${slug}/projects/${project.id}`;
+  const base = `/${slug}/products/${productSlug}/projects/${project.id}`;
   const isActive = pathname.startsWith(base);
   const settingsBase = `${base}/settings`;
   const isSettingsOpen = pathname.startsWith(settingsBase);
@@ -363,6 +365,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 <ProjectNavItem
                   key={project.id}
                   slug={slug}
+                  productSlug={productSlug}
                   project={project}
                   expanded={expanded.has(project.id)}
                   onToggle={() => toggle(project.id)}
@@ -372,7 +375,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               ))}
               {(projects?.length ?? 0) === 0 && (
                 <Link
-                  href={`/${slug}/projects`}
+                  href={`/${slug}/products/${productSlug}/projects`}
                   onClick={onNavigate}
                   className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >

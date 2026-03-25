@@ -167,7 +167,9 @@ export default function ProjectsPage() {
               <code className="block text-xs font-mono text-muted-foreground truncate">
                 {project.apiKey}
               </code>
-              <Link href={`/${slug}/projects/${project.id}`}>
+              <Link
+                href={`/${slug}/products/${productSlug}/projects/${project.id}`}
+              >
                 <Button variant="outline" className="w-full mt-2">
                   View Project
                   <ArrowRight className="w-4 h-4 ml-2" />

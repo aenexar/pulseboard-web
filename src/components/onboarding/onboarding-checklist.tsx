@@ -61,7 +61,7 @@ export function OnboardingChecklist() {
       label: "Create your first project",
       icon: FolderKanban,
       done: hasProject,
-      href: `/${firstSlug}/projects`,
+      href: `/${firstSlug}/products/${productSlug}/projects`,
     },
     {
       id: "sdk",
@@ -69,8 +69,8 @@ export function OnboardingChecklist() {
       icon: Terminal,
       done: false,
       href: firstProject
-        ? `/${firstSlug}/projects/${firstProject.id}`
-        : `/${firstSlug}/projects`,
+        ? `/${firstSlug}/products/${productSlug}/projects/${firstProject.id}`
+        : `/${firstSlug}/products/${productSlug}/projects`,
     },
     {
       id: "ai",
@@ -78,8 +78,8 @@ export function OnboardingChecklist() {
       icon: Brain,
       done: hasAiConfig,
       href: firstProject
-        ? `/${firstSlug}/projects/${firstProject.id}/settings`
-        : `/${firstSlug}/projects`,
+        ? `/${firstSlug}/products/${productSlug}/projects/${firstProject.id}/settings`
+        : `/${firstSlug}/products/${productSlug}/projects`,
     },
     {
       id: "member",

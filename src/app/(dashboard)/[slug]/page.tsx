@@ -109,7 +109,7 @@ export default function OrgOverviewPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">Projects</h2>
           <Link
-            href={`/${slug}/projects`}
+            href={`/${slug}/products/${productSlug}/projects`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
             View all
@@ -127,7 +127,7 @@ export default function OrgOverviewPage() {
               Create your first project to start monitoring
             </p>
             <Link
-              href={`/${slug}/projects`}
+              href={`/${slug}/products/${productSlug}/projects`}
               className="mt-4 text-sm text-brand hover:underline"
             >
               Go to Projects →
@@ -139,7 +139,7 @@ export default function OrgOverviewPage() {
           {projects?.slice(0, 6).map((project) => (
             <Link
               key={project.id}
-              href={`/${slug}/projects/${project.id}`}
+              href={`/${slug}/products/${productSlug}/projects/${project.id}`}
               className="group p-4 rounded-lg bg-card border border-border hover:border-brand/30 transition-colors"
             >
               <div className="flex items-start justify-between gap-2">

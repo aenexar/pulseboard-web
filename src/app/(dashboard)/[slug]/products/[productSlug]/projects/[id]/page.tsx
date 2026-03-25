@@ -68,24 +68,23 @@ function ChartTooltip({
 export default function ProjectPage() {
   const params = useParams();
   const slug = params?.slug as string;
-  const id = params?.id as string;
+  const projectId = params?.id as string;
+  const productSlug = params?.productSlug as string;
 
-  const { data: products } = useProducts(slug);
-  const productSlug = products?.[0]?.slug ?? "";
-  const { data: project, isLoading } = useProject(slug, productSlug, id);
+  const { data: project, isLoading } = useProject(slug, productSlug, projectId);
   const { data: stats, isLoading: statsLoading } = useProjectStats(
     slug,
     productSlug,
-    id,
+    projectId,
   );
   const { data: chart, isLoading: chartLoading } = useProjectChart(
     slug,
     productSlug,
-    id,
+    projectId,
   );
 
   const { events, connected, enabled, start, stop, clearEvents } =
-    useRealtimeEvents(id);
+    useRealtimeEvents(projectId);
   const [copied, setCopied] = useState(false);
 
   const copyApiKey = () => {
@@ -144,7 +143,7 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/${slug}/projects/${id}/settings/details`}>
+          <Link href={`/${slug}/projects/${projectId}/settings/details`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="w-4 h-4" />
               Settings

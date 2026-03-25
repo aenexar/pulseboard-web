@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useCompleteOnboarding } from "@/hooks";
+import { useCompleteOnboarding, useProducts } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useOnboardingStore } from "@/store/onboarding.store";
 import {
@@ -19,6 +19,8 @@ export default function OnboardingDonePage() {
   const router = useRouter();
   const { slug, projectId, reset } = useOnboardingStore();
   const completeOnboarding = useCompleteOnboarding();
+  const { data: products } = useProducts(slug ?? "");
+  const productSlug = products?.[0]?.slug ?? "";
 
   useEffect(() => {
     completeOnboarding.mutate();
@@ -27,8 +29,8 @@ export default function OnboardingDonePage() {
 
   const handleGoToDashboard = () => {
     reset();
-    if (slug && projectId) {
-      router.replace(`/${slug}/projects/${projectId}`);
+    if (slug && projectId && productSlug) {
+      router.replace(`/${slug}/products/${productSlug}/projects/${projectId}`);
     } else if (slug) {
       router.replace(`/${slug}`);
     } else {
