@@ -1,0 +1,20 @@
+{
+  "model": "claude-sonnet-4-5",
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(grep -r * src/)",
+      "Bash(find src/ *)",
+      "Bash(npx shadcn add *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(* --force)",
+      "Bash(curl * production*)"
+    ]
+  }
+}
