@@ -25,44 +25,104 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto refresh on 401
+// ─── Shared refresh promise ───────────────────────────────────────────────────
+// Prevents race condition where multiple simultaneous 401s each trigger
+// a separate refresh — which burns the refresh token after the first one
+
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshAccessToken(): Promise<string> {
+  const { data } = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+    {},
+    { withCredentials: true },
+  );
+  const newToken = data.data.accessToken;
+  Cookies.set(TOKEN_KEY, newToken, { expires: 1, path: "/", sameSite: "lax" });
+  return newToken;
+}
+
+// ─── Auto refresh on 401 ─────────────────────────────────────────────────────
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
 
-    // Don't redirect on 2FA verification failures
     const is2FARoute = original?.url?.includes("/auth/verify-2fa");
+    const isRefreshRoute = original?.url?.includes("/auth/refresh");
 
-    if (error.response?.status === 401 && !original._retry && !is2FARoute) {
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      !is2FARoute &&
+      !isRefreshRoute
+    ) {
       original._retry = true;
 
       try {
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
+        // All concurrent 401s share the same promise — only one refresh fires
+        if (!refreshPromise) {
+          refreshPromise = refreshAccessToken().finally(() => {
+            refreshPromise = null;
+          });
+        }
 
-        const newToken = data.data.accessToken;
-        Cookies.set(TOKEN_KEY, newToken);
+        const newToken = await refreshPromise;
         original.headers.authorization = `Bearer ${newToken}`;
-
         return api(original);
-      } catch {
-        const { useAuthStore } = await import("@/store/auth.store");
-        const { useOnboardingStore } = await import("@/store/onboarding.store");
-        const { queryClient } = await import("@/lib/queryClient");
-        useAuthStore.getState().clearAuth();
-        useOnboardingStore.getState().reset();
-        queryClient.clear();
-        window.location.href = "/login";
+      } catch (refreshError: any) {
+        // Only log out on an explicit 401 from the refresh endpoint
+        // Network errors and timeouts do NOT log the user out
+        if (refreshError?.response?.status === 401) {
+          const { useAuthStore } = await import("@/store/auth.store");
+          const { useOnboardingStore } =
+            await import("@/store/onboarding.store");
+          const { queryClient } = await import("@/lib/queryClient");
+          useAuthStore.getState().clearAuth();
+          useOnboardingStore.getState().reset();
+          queryClient.clear();
+          window.location.href = "/login";
+        }
+        return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
   },
 );
+
+// ─── Proactive token refresh on tab focus ────────────────────────────────────
+// When the user switches back to the tab after 15+ min, refresh the token
+// before React Query fires all its stale queries — prevents the 401 flood
+
+if (typeof window !== "undefined") {
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState !== "visible") return;
+
+    const token = Cookies.get(TOKEN_KEY);
+    if (!token) return;
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const expiresAt = payload.exp * 1000;
+      const twoMinutes = 2 * 60 * 1000;
+
+      if (Date.now() > expiresAt - twoMinutes) {
+        if (!refreshPromise) {
+          refreshPromise = refreshAccessToken().finally(() => {
+            refreshPromise = null;
+          });
+        }
+        await refreshPromise;
+      }
+    } catch {
+      // Silent — the interceptor handles it on the next API call
+    }
+  });
+}
+
+// ─── Token utilities ─────────────────────────────────────────────────────────
 
 export const tokenUtils = {
   set: (token: string) =>
@@ -252,7 +312,6 @@ export const analyticsRoutes = {
     `/organisations/${slug}/products/${productSlug}/projects/sparklines`,
   stats: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/stats`,
-  // Inside analyticsRoutes:
   chart: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/chart`,
 };
