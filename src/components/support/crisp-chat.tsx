@@ -22,6 +22,7 @@ export function CrispChat() {
     try {
       Crisp.user.setEmail(user.email);
       Crisp.user.setNickname(user.name);
+      console.log({ avatar: user.avatarUrl });
       if (user.avatarUrl) {
         Crisp.user.setAvatar(user.avatarUrl);
       }
