@@ -2,6 +2,7 @@ import { EmailVerificationBanner } from "@/components/layout/email-verification-
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
+import { CrispChat } from "@/components/support/crisp-chat";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
         </main>
       </div>
       <OnboardingChecklist />
+      <CrispChat />
     </div>
   );
 }
