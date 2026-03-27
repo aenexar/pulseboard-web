@@ -71,10 +71,11 @@ api.interceptors.response.use(
         const newToken = await refreshPromise;
         original.headers.authorization = `Bearer ${newToken}`;
         return api(original);
-      } catch (refreshError: any) {
-        // Only log out on an explicit 401 from the refresh endpoint
-        // Network errors and timeouts do NOT log the user out
-        if (refreshError?.response?.status === 401) {
+      } catch (refreshError: unknown) {
+        if (
+          axios.isAxiosError(refreshError) &&
+          refreshError.response?.status === 401
+        ) {
           const { useAuthStore } = await import("@/store/auth.store");
           const { useOnboardingStore } =
             await import("@/store/onboarding.store");
@@ -84,7 +85,6 @@ api.interceptors.response.use(
           queryClient.clear();
           window.location.href = "/login";
         }
-        return Promise.reject(refreshError);
       }
     }
 
