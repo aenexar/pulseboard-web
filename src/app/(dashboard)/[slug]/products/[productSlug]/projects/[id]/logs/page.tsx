@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLogs, useLogStats, useProducts } from "@/hooks";
+import { useLogs, useLogStats, useRealtimeLogs } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -19,8 +19,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
+  Play,
   ScrollText,
   Search,
+  Square,
+  Trash2,
   X,
 } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -55,10 +58,11 @@ const LEVEL_CONFIG = {
   },
 };
 
-// ─── Log Row ──────────────────────────────────────────────────────────────────
+// ─── Log row ──────────────────────────────────────────────────────────────────
 
 function LogRow({
   item,
+  isLive = false,
 }: {
   item: {
     id: string;
@@ -69,14 +73,18 @@ function LogRow({
     appVersion: string | null;
     timestamp: string;
   };
+  isLive?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const config = LEVEL_CONFIG[item.level];
+  const config = LEVEL_CONFIG[item.level] ?? LEVEL_CONFIG.info;
   const Icon = config.icon;
 
   return (
     <div
-      className="font-mono text-xs border-b border-border last:border-0 cursor-pointer hover:bg-accent/50 transition-colors"
+      className={cn(
+        "font-mono text-xs border-b border-border last:border-0 cursor-pointer hover:bg-accent/50 transition-colors",
+        isLive && "animate-in fade-in slide-in-from-top-1 duration-200",
+      )}
       onClick={() => setExpanded(!expanded)}
     >
       <div className="flex items-start gap-3 px-4 py-2">
@@ -114,9 +122,15 @@ function LogRow({
             v{item.appVersion}
           </span>
         )}
+
+        {/* Live indicator */}
+        {isLive && (
+          <span className="text-brand text-[10px] font-semibold shrink-0">
+            LIVE
+          </span>
+        )}
       </div>
 
-      {/* Expanded meta */}
       {expanded && item.meta && (
         <div className="px-4 pb-3 ml-[4.5rem]">
           <pre className="text-xs text-muted-foreground bg-muted p-3 rounded-md overflow-auto max-h-48">
@@ -134,9 +148,7 @@ export default function LogsPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const id = params?.id as string;
-
-  const { data: products } = useProducts(slug);
-  const productSlug = products?.[0]?.slug ?? "";
+  const productSlug = params?.productSlug as string;
 
   const [level, setLevel] = useState<string>("");
   const [search, setSearch] = useState<string>("");
@@ -150,11 +162,19 @@ export default function LogsPage() {
     page,
   });
 
+  const {
+    logs: liveLogs,
+    connected,
+    enabled: liveEnabled,
+    start: startLive,
+    stop: stopLive,
+    clearLogs: clearLive,
+  } = useRealtimeLogs(id);
+
   const handleSearch = () => {
     setQuery(search);
     setPage(1);
   };
-
   const handleClear = () => {
     setSearch("");
     setQuery("");
@@ -167,12 +187,83 @@ export default function LogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Logs</h1>
-        <p className="text-muted-foreground mt-1">
-          Console and application logs from your project
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Logs</h1>
+          <p className="text-muted-foreground mt-1">
+            Console and application logs from your project
+          </p>
+        </div>
+
+        {/* Live toggle */}
+        <div className="flex items-center gap-2">
+          {liveEnabled && (
+            <>
+              {connected && (
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+                  <span className="text-xs text-muted-foreground font-mono">
+                    live
+                  </span>
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={clearLive}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear
+              </Button>
+            </>
+          )}
+          <Button
+            size="sm"
+            onClick={liveEnabled ? stopLive : startLive}
+            variant="ghost"
+            className={cn(
+              "gap-2 font-medium",
+              liveEnabled
+                ? "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20"
+                : "bg-brand/10 text-brand hover:bg-brand/20 border border-brand/20",
+            )}
+          >
+            {liveEnabled ? (
+              <>
+                <Square className="w-3.5 h-3.5 fill-current" /> Stop Live
+              </>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current" /> Live Logs
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Live feed */}
+      {liveEnabled && (
+        <Card>
+          <CardContent className="p-0">
+            {!connected && (
+              <div className="flex items-center gap-2 px-4 py-3 text-xs text-muted-foreground font-mono">
+                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-pulse" />
+                Connecting...
+              </div>
+            )}
+            {connected && liveLogs.length === 0 && (
+              <div className="flex items-center gap-2 px-4 py-3 text-xs text-muted-foreground font-mono">
+                <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+                Waiting for logs...
+              </div>
+            )}
+            {liveLogs.map((log) => (
+              <LogRow key={log.id} item={log} isLive />
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       {stats && (
@@ -182,23 +273,24 @@ export default function LogsPage() {
               keyof typeof LEVEL_CONFIG,
               (typeof LEVEL_CONFIG)[keyof typeof LEVEL_CONFIG],
             ][]
-          ).map(([level, config]) => (
+          ).map(([lvl, config]) => (
             <button
-              key={level}
+              key={lvl}
               onClick={() => {
-                setLevel(level);
+                setLevel(lvl);
                 setPage(1);
               }}
               className={cn(
                 "flex items-center justify-between p-3 rounded-lg border transition-colors text-left",
                 "border-border bg-card hover:border-brand/30",
+                level === lvl && "border-brand/50 bg-brand/5",
               )}
             >
               <span className="text-xs text-muted-foreground capitalize">
                 {config.label}
               </span>
               <span className={cn("text-lg font-bold", config.color)}>
-                {stats[level]}
+                {stats[lvl]}
               </span>
             </button>
           ))}
@@ -245,7 +337,7 @@ export default function LogsPage() {
         </div>
       </div>
 
-      {/* Log list */}
+      {/* Historical log list */}
       <Card>
         <CardContent className="p-0">
           {isLoading && (

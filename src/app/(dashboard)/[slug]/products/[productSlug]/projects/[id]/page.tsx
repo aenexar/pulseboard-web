@@ -8,12 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useProducts,
   useProject,
   useProjectChart,
   useProjectStats,
+  useRealtimeEvents,
 } from "@/hooks";
-import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { cn } from "@/lib/utils";
 import { Framework, FRAMEWORK_LABELS } from "@/types";
 import {

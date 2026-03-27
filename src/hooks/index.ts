@@ -19,7 +19,7 @@ export * from "./projects";
 export * from "./releases";
 export * from "./sessions";
 export * from "./two-factor";
+export * from "./realtime";
 
 // Standalone hooks
 export * from "./useCooldown";
-export * from "./useRealtimeEvents";

@@ -573,9 +573,9 @@ export default function InsightsPage() {
             )}
             <Button
               onClick={() => triggerInsights.mutateAsync()}
-              // disabled={
-              //   triggerInsights.isPending || onCooldown || !hasEnoughData
-              // }
+              disabled={
+                triggerInsights.isPending || onCooldown || !hasEnoughData
+              }
               variant="outline"
             >
               <RefreshCw
