@@ -3,7 +3,7 @@
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Organisation } from "@/types";
-import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
