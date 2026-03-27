@@ -181,6 +181,13 @@ export const projectRoutes = {
     `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/${insightId}/read`,
   aiConfig: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/ai-config`,
+  explainInsight: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    insightId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/${insightId}/explain`,
 };
 
 export const billingRoutes = {
