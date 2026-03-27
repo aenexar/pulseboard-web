@@ -28,13 +28,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAiConfig, useDeleteAiConfig, useUpsertAiConfig } from "@/hooks";
+import {
+  useAiConfig,
+  useDeleteAiConfig,
+  useUpsertAiConfig,
+  useProduct,
+  useProject,
+  useOrganisation,
+} from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   AIModel,
   AIProvider,
   CRON_PRESET_LABELS,
   CronPreset,
+  FRAMEWORK_LABELS,
+  Framework,
   MODEL_LABELS,
   PROVIDER_LABELS,
   PROVIDER_MODELS,
@@ -51,6 +60,97 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+// ─── AI Context Panel ─────────────────────────────────────────────────────────
+
+function AIContextPanel({
+  slug,
+  productSlug,
+  projectId,
+}: {
+  slug: string;
+  productSlug: string;
+  projectId: string;
+}) {
+  const { data: org } = useOrganisation(slug);
+  const { data: product } = useProduct(slug, productSlug);
+  const { data: project } = useProject(slug, productSlug, projectId);
+
+  const framework = project?.framework
+    ? (FRAMEWORK_LABELS[project.framework as Framework] ?? project.framework)
+    : null;
+
+  const rows = [
+    {
+      label: "Organisation",
+      value: org?.name ?? "—",
+      missing: false,
+    },
+    {
+      label: "Product description",
+      value: product?.description || "Not set",
+      missing: !product?.description,
+    },
+    {
+      label: "Project description",
+      value: project?.description || "Not set",
+      missing: !project?.description,
+    },
+    {
+      label: "Framework",
+      value: framework || "Not set",
+      missing: !framework,
+    },
+  ];
+
+  const missingCount = rows.filter((r) => r.missing).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
+          <CardTitle className="text-base">AI context</CardTitle>
+        </div>
+        <CardDescription>
+          This context is sent to the AI on every insight generation. The more
+          detail you provide, the more accurate the insights.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          {rows.map(({ label, value, missing }) => (
+            <div key={label} className="flex gap-3 text-sm">
+              <span className="text-muted-foreground w-40 shrink-0">
+                {label}
+              </span>
+              <span
+                className={cn(
+                  missing ? "text-muted-foreground italic" : "text-foreground",
+                )}
+              >
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {missingCount > 0 && (
+          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              {missingCount} context field{missingCount > 1 ? "s are" : " is"}{" "}
+              missing. Add descriptions to your project and product settings to
+              improve insight accuracy.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function AIConfigTab({
   slug,
@@ -126,6 +226,7 @@ export function AIConfigTab({
 
   return (
     <div className="space-y-6">
+      {/* Status banner */}
       {!aiConfig ? (
         <div
           className={cn(
@@ -170,6 +271,7 @@ export function AIConfigTab({
         </div>
       )}
 
+      {/* Provider config */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -199,6 +301,7 @@ export function AIConfigTab({
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label>Model</Label>
             <Select value={model} onValueChange={(v) => setModel(v as AIModel)}>
@@ -214,6 +317,7 @@ export function AIConfigTab({
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Key className="w-3.5 h-3.5" />
@@ -247,6 +351,7 @@ export function AIConfigTab({
         </CardContent>
       </Card>
 
+      {/* Schedule */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -290,6 +395,14 @@ export function AIConfigTab({
         </CardContent>
       </Card>
 
+      {/* AI context panel */}
+      <AIContextPanel
+        slug={slug}
+        productSlug={productSlug}
+        projectId={projectId}
+      />
+
+      {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button
@@ -307,6 +420,7 @@ export function AIConfigTab({
             </div>
           )}
         </div>
+
         {aiConfig && (
           <AlertDialog>
             <AlertDialogTrigger asChild>

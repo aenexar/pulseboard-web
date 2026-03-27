@@ -24,6 +24,7 @@ import {
   Menu,
   MessageSquare,
   Monitor,
+  Package,
   ScrollText,
   Settings,
   Shield,
@@ -262,6 +263,89 @@ function ProjectNavItem({
   );
 }
 
+// ─── Product nav ───────────────────────────────────────────────────────────────
+
+function ProductNavItem({
+  slug,
+  product,
+  pathname,
+  onNavigate,
+}: {
+  slug: string;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    _count?: { projects: number };
+  };
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const productBase = `/${slug}/products/${product.slug}`;
+  const isActive = pathname.startsWith(productBase);
+  const [open, setOpen] = useState(isActive);
+
+  const { data: projects } = useProjects(slug, product.slug);
+  const { expanded, toggle } = useExpandedProjects();
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+          isActive
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent",
+        )}
+      >
+        <Package className="w-3.5 h-3.5 shrink-0" />
+        <span className="flex-1 truncate text-left">{product.name}</span>
+        {open ? (
+          <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+        ) : (
+          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+        )}
+      </button>
+
+      {open && (
+        <div className="mt-0.5 space-y-0.5">
+          <NavLink
+            href={productBase}
+            label="Overview"
+            icon={LayoutDashboard}
+            active={pathname === productBase}
+            indent={1}
+            onClick={onNavigate}
+          />
+          {projects?.map((project) => (
+            <ProjectNavItem
+              key={project.id}
+              slug={slug}
+              productSlug={product.slug}
+              project={project}
+              expanded={expanded.has(project.id)}
+              onToggle={() => toggle(project.id)}
+              pathname={pathname}
+              onNavigate={onNavigate}
+            />
+          ))}
+          {(projects?.length ?? 0) === 0 && (
+            <Link
+              href={`${productBase}/projects`}
+              onClick={onNavigate}
+              className="flex items-center gap-2.5 pl-7 pr-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <FolderKanban className="w-3.5 h-3.5 shrink-0" />
+              <span>All Projects</span>
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Sidebar content ───────────────────────────────────────────────────────────
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -390,13 +474,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         ) : (
           <>
             <SectionLabel label="Products" />
-            {products?.map((product) => (
-              <div key={product.id}>
-                <p className="px-3 py-1 text-xs font-semibold text-muted-foreground truncate">
-                  {product.name}
-                </p>
-              </div>
-            ))}
+            <div className="space-y-0.5">
+              {products?.map((product) => (
+                <ProductNavItem
+                  key={product.id}
+                  slug={slug}
+                  product={product}
+                  pathname={pathname}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </div>
           </>
         )}
       </nav>
