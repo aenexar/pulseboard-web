@@ -28,6 +28,7 @@ import {
   Settings,
   Shield,
   Tag,
+  Terminal,
   User,
   Users,
   Zap,
@@ -156,6 +157,7 @@ function ProjectNavItem({
 
   const projectNavItems = [
     { href: base, label: "Overview", icon: LayoutDashboard },
+    { href: `${base}/setup`, label: "Setup", icon: Terminal }, // ← add
     { href: `${base}/analytics`, label: "Analytics", icon: BarChart2 },
     { href: `${base}/releases`, label: "Releases", icon: Tag },
     { href: `${base}/logs`, label: "Logs", icon: ScrollText },
