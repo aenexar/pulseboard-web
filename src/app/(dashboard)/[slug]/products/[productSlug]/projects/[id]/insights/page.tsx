@@ -268,7 +268,9 @@ export default function InsightsPage() {
               Configure your AI provider to start generating insights
             </p>
           </div>
-          <Link href={`/${slug}/projects/${id}/settings`}>
+          <Link
+            href={`/${slug}/products/${productSlug}/projects/${id}/settings/ai`}
+          >
             <Button variant="outline" className="mt-2">
               <Settings className="w-4 h-4 mr-2" />
               Go to Settings
