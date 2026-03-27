@@ -3,13 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAiConfig,
   useExplainInsight,
@@ -18,7 +18,6 @@ import {
   useProjectStats,
   useTriggerInsights,
 } from "@/hooks";
-import { api, projectRoutes } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Insight, InsightSeverity } from "@/types";
 import {
