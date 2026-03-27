@@ -1,5 +1,6 @@
 "use client";
 
+import { EnvironmentSwitcher } from "@/components/dashboard/environment-switcher";
 import { EventsFeed } from "@/components/dashboard/events-feed";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Badge } from "@/components/ui/badge";
@@ -143,7 +144,10 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/${slug}/projects/${projectId}/settings/details`}>
+          <EnvironmentSwitcher />
+          <Link
+            href={`/${slug}/products/${productSlug}/projects/${projectId}/settings/details`}
+          >
             <Button variant="outline" size="sm" className="gap-2">
               <Settings className="w-4 h-4" />
               Settings
