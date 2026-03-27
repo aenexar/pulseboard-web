@@ -315,3 +315,7 @@ export const analyticsRoutes = {
   chart: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/chart`,
 };
+
+export const aiHealthRoutes = {
+  status: (slug: string) => `/organisations/${slug}/ai/health`,
+};
