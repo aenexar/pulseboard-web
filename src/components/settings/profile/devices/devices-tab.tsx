@@ -35,14 +35,6 @@ function DeviceIcon({ device }: { device: string }) {
   return <Monitor className="w-5 h-5" />;
 }
 
-function formatDuration(minutes: number | null): string | null {
-  if (minutes === null) return null;
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
 export function DevicesTab() {
   const { data: groups, isLoading } = useSessionAudit();
   const revokeSession = useRevokeAuditSession();
@@ -56,8 +48,8 @@ export function DevicesTab() {
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(2)].map((_, i) => (
-          <Skeleton key={i} className="h-32" />
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-16" />
         ))}
       </div>
     );
@@ -67,11 +59,11 @@ export function DevicesTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <CardTitle className="text-base">Session History</CardTitle>
+              <CardTitle className="text-base">Active Devices</CardTitle>
               <CardDescription>
-                All login sessions grouped by device. Last 90 days.
+                Devices where you are currently signed in.
               </CardDescription>
             </div>
             {hasActiveSessions && (
@@ -80,9 +72,9 @@ export function DevicesTab() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-destructive border-destructive/30 hover:bg-destructive/10 shrink-0"
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-2"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="w-4 h-4" />
                     Sign out all others
                   </Button>
                 </AlertDialogTrigger>
@@ -110,146 +102,110 @@ export function DevicesTab() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+
+        <CardContent className="space-y-2">
           {groups?.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No session history found.
+              No active devices found.
             </p>
           )}
 
-          {groups?.map((group) => (
-            <div key={group.fingerprint} className="space-y-2">
-              {/* Device header */}
-              <div className="flex items-center gap-2 px-1">
-                <DeviceIcon device={group.device ?? "Desktop"} />
-                <span className="text-sm font-semibold text-foreground">
-                  {group.browser} on {group.os}
-                </span>
-                {(group.city || group.country) && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Globe className="w-3 h-3" />
-                    {[group.city, group.country].filter(Boolean).join(", ")}
-                  </span>
+          {groups?.map((group) => {
+            // Show only the most recent session for this device
+            const latest = group.sessions[0];
+            if (!latest) return null;
+
+            return (
+              <div
+                key={group.fingerprint}
+                className={cn(
+                  "flex items-center justify-between gap-3 p-3 rounded-lg border",
+                  latest.isCurrent
+                    ? "bg-brand/5 border-brand/20"
+                    : "bg-card border-border",
                 )}
-              </div>
-
-              {/* Sessions for this device */}
-              <div className="space-y-1.5 pl-6 border-l border-border ml-2">
-                {group.sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className={cn(
-                      "flex items-center justify-between gap-3 p-3 rounded-lg",
-                      session.isCurrent
-                        ? "bg-brand/5 border border-brand/20"
-                        : "bg-card border border-border",
-                    )}
-                  >
-                    <div className="flex-1 min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <StatusBadge status={session.status} />
-                        {session.isCurrent && (
-                          <Badge
-                            variant="outline"
-                            className="text-brand border-brand/30 text-xs"
-                          >
-                            This device
-                          </Badge>
-                        )}
-                        {session.duration !== null && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatDuration(session.duration)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                        <span>
-                          Logged in{" "}
-                          {new Date(session.loggedInAt).toLocaleString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </span>
-                        {session.loggedOutAt && (
-                          <span>
-                            → Logged out{" "}
-                            {new Date(session.loggedOutAt).toLocaleString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}
-                          </span>
-                        )}
-                        {session.isActive && !session.loggedOutAt && (
-                          <div className="flex items-center gap-1 text-brand">
-                            <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
-                            Active now
-                          </div>
-                        )}
-                        {session.ipAddress && (
-                          <span className="font-mono">{session.ipAddress}</span>
-                        )}
-                      </div>
+              >
+                {/* Device info */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="text-muted-foreground shrink-0">
+                    <DeviceIcon device={group.device ?? "Desktop"} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-foreground">
+                        {group.browser} on {group.os}
+                      </span>
+                      {latest.isCurrent && (
+                        <Badge
+                          variant="outline"
+                          className="text-brand border-brand/30 text-xs"
+                        >
+                          This device
+                        </Badge>
+                      )}
+                      {latest.isActive && !latest.isCurrent && (
+                        <div className="flex items-center gap-1 text-xs text-brand">
+                          <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+                          Active
+                        </div>
+                      )}
                     </div>
+                    {(group.city || group.country) && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Globe className="w-3 h-3" />
+                        {[group.city, group.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-                    {/* Revoke / Logout */}
-                    {session.isCurrent ? (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-destructive shrink-0"
-                          >
-                            <LogOut className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Sign out of this device?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              You will be signed out and redirected to the login
-                              page.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => logout.mutate()}
-                              className="bg-destructive hover:bg-destructive/90 text-white"
-                            >
-                              Sign out
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    ) : session.isActive ? (
+                {/* Action */}
+                {latest.isCurrent ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => revokeSession.mutate(session.id)}
-                        disabled={revokeSession.isPending}
                         className="text-muted-foreground hover:text-destructive shrink-0"
                       >
                         <LogOut className="w-4 h-4" />
                       </Button>
-                    ) : null}
-                  </div>
-                ))}
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Sign out of this device?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You will be signed out and redirected to the login
+                          page.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => logout.mutate()}
+                          className="bg-destructive hover:bg-destructive/90 text-white"
+                        >
+                          Sign out
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : latest.isActive ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => revokeSession.mutate(latest.id)}
+                    disabled={revokeSession.isPending}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                ) : null}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
     </div>
