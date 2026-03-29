@@ -18,7 +18,7 @@ export function useTriggerInsights(
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["insights", slug, projectId],
+        queryKey: ["insights", slug, productSlug, projectId],
       });
     },
     onError: (error) => {

@@ -24,7 +24,7 @@ import { Framework, FRAMEWORK_GROUPS, FRAMEWORK_LABELS } from "@/types";
 import { AlertTriangle, CheckCircle2, Save, Settings2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export function ProjectDetailsTab({
+export function ProjectGeneralTab({
   slug,
   productSlug,
   projectId,

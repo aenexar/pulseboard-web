@@ -206,21 +206,69 @@ export type InsightCategory =
   | "release"
   | "user_behaviour"
   | "security";
+export type InsightLevel = "project" | "product" | "org";
+export type InsightTrend = "improving" | "worsening" | "stable";
+
+export type InsightReader = {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+};
+
+export type InsightComparison = {
+  trend: InsightTrend;
+  summary: string;
+  improvement: string | null;
+  regression: string | null;
+  netChange: string;
+  expectedImpact: string;
+  recommendation: string;
+};
+
+export type InsightRead = {
+  id: string;
+  insightId: string;
+  userId: string;
+  readAt: string;
+  user: InsightReader;
+};
 
 export type Insight = {
   id: string;
-  projectId: string;
   title: string;
   description: string;
   severity: InsightSeverity;
   category: InsightCategory;
   metadata: Record<string, unknown> | null;
-  isRead: boolean;
+  level: InsightLevel;
+  projectId: string | null;
+  productId: string | null;
+  organisationId: string | null;
   fingerprint: string | null;
   occurrences: number;
   firstSeenAt: string;
   lastSeenAt: string;
   generatedAt: string;
+
+  // Read receipts
+  reads: InsightRead[];
+
+  // Explanation
+  explanation: string | null;
+  explanationGeneratedAt: string | null;
+  explanationGeneratedBy: InsightReader | null;
+
+  // Comparison
+  comparedToInsightId: string | null;
+  comparedToInsight: {
+    id: string;
+    title: string;
+    severity: InsightSeverity;
+    description: string;
+    generatedAt: string;
+    metadata: Record<string, unknown> | null;
+  } | null;
+  comparisonData: InsightComparison | null;
 };
 
 export type TriggerInsightsResponse = {

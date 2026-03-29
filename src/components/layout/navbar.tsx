@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,10 +11,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useLogout } from "@/hooks";
 import { useAuthStore } from "@/store/auth.store";
-import { LogOut, Settings, User } from "lucide-react";
+import {
+  Activity,
+  LogOut,
+  LucideIcon,
+  Monitor,
+  Settings,
+  Shield,
+  User,
+  Zap,
+} from "lucide-react";
+import { Url } from "next/dist/shared/lib/router/router";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
@@ -82,6 +92,27 @@ function usePageMeta() {
   return { title: slug, description: "Organisation overview" };
 }
 
+// ─── Dropdown Menu Item ───────────────────────────────────────────────────────
+
+function NavDropdownMenuItem({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: Url;
+  icon: LucideIcon;
+  label: string;
+}) {
+  return (
+    <DropdownMenuItem asChild>
+      <Link href={href} className="cursor-pointer">
+        <Icon className="w-4 h-4 mr-2" />
+        {label}
+      </Link>
+    </DropdownMenuItem>
+  );
+}
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 export function Navbar() {
@@ -91,6 +122,14 @@ export function Navbar() {
   const slug = params?.slug as string | undefined;
 
   const { title, description } = usePageMeta();
+
+  const profileItems = [
+    { href: "/profile/general", label: "General", icon: User },
+    { href: "/profile/security", label: "Security", icon: Shield },
+    { href: "/profile/connections", label: "Connections", icon: Zap },
+    { href: "/profile/devices", label: "Devices", icon: Monitor },
+    { href: "/profile/activity", label: "Activity", icon: Activity },
+  ];
 
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
@@ -167,6 +206,15 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
               )}
+
+              {profileItems.map((item) => (
+                <NavDropdownMenuItem
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  icon={item.icon}
+                />
+              ))}
 
               <DropdownMenuItem
                 onClick={() => logout.mutate()}

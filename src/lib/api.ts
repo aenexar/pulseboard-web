@@ -188,6 +188,13 @@ export const projectRoutes = {
     insightId: string,
   ) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/${insightId}/explain`,
+  insightById: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    insightId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/insights/${insightId}`,
 };
 
 export const billingRoutes = {
@@ -325,4 +332,16 @@ export const analyticsRoutes = {
 
 export const aiHealthRoutes = {
   status: (slug: string) => `/organisations/${slug}/ai/health`,
+};
+
+export const insightRoutes = {
+  // Product level
+  productInsights: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/insights`,
+  triggerProduct: (slug: string, productSlug: string) =>
+    `/organisations/${slug}/products/${productSlug}/insights/trigger`,
+
+  // Org level
+  orgInsights: (slug: string) => `/organisations/${slug}/insights`,
+  triggerOrg: (slug: string) => `/organisations/${slug}/insights/trigger`,
 };

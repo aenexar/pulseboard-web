@@ -1,6 +1,7 @@
 import { api, projectRoutes } from "@/lib/api";
 import { Insight } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/auth.store";
 
 export function useMarkInsightRead(
   slug: string,
@@ -8,6 +9,7 @@ export function useMarkInsightRead(
   projectId: string,
 ) {
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
 
   return useMutation({
     mutationFn: async (insightId: string) => {
@@ -16,28 +18,48 @@ export function useMarkInsightRead(
       );
     },
     onMutate: async (insightId: string) => {
-      await queryClient.cancelQueries({
-        queryKey: ["insights", slug, projectId],
-      });
-      const previous = queryClient.getQueryData<Insight[]>([
-        "insights",
-        slug,
-        projectId,
-      ]);
-      queryClient.setQueryData<Insight[]>(
-        ["insights", slug, projectId],
-        (old) =>
-          old?.map((i) => (i.id === insightId ? { ...i, isRead: true } : i)),
+      const key = ["insights", slug, productSlug, projectId];
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Insight[]>(key);
+
+      queryClient.setQueryData<Insight[]>(key, (old) =>
+        old?.map((i) => {
+          if (i.id !== insightId) return i;
+          const alreadyRead = i.reads.some((r) => r.userId === user?.id);
+          if (alreadyRead) return i;
+          return {
+            ...i,
+            reads: [
+              ...i.reads,
+              {
+                id: `optimistic-${Date.now()}`,
+                insightId,
+                userId: user?.id ?? "",
+                readAt: new Date().toISOString(),
+                user: {
+                  id: user?.id ?? "",
+                  name: user?.name ?? "",
+                  avatarUrl: user?.avatarUrl ?? null,
+                },
+              },
+            ],
+          };
+        }),
       );
       return { previous };
     },
     onError: (_err, _id, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
-          ["insights", slug, projectId],
+          ["insights", slug, productSlug, projectId],
           context.previous,
         );
       }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["insights", slug, productSlug, projectId],
+      });
     },
   });
 }

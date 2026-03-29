@@ -1,10 +1,12 @@
 # PulseBoard Web
 
 ## What This Is
+
 Next.js 16 (App Router) + React 19 + TypeScript frontend for PulseBoard.
 Deployed on Vercel. The dashboard that developers use to monitor their mobile apps.
 
 ## Entry Points
+
 - `src/app/(dashboard)/layout.tsx` — dashboard shell (Sidebar + Navbar + main)
 - `src/app/(auth)/layout.tsx` — unauthenticated pages (login, register etc.)
 - `src/lib/api.ts` — Axios instance + all API route builders
@@ -12,24 +14,26 @@ Deployed on Vercel. The dashboard that developers use to monitor their mobile ap
 - `src/types/index.ts` — all shared TypeScript types
 
 ## Tech Stack
-| Concern | Library |
-|---|---|
-| Framework | Next.js 16 (App Router, standalone output) |
-| Language | TypeScript 5, strict mode |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui + Radix UI |
-| Data fetching | TanStack Query v5 (React Query) |
-| HTTP client | Axios |
-| Auth state | Zustand v5 with persist middleware |
-| Forms | React Hook Form + Zod v4 |
-| Charts | Recharts v3 |
-| Icons | Lucide React |
-| Toasts | Sonner |
-| Realtime | Socket.IO client |
-| Passkeys | @simplewebauthn/browser |
+
+| Concern       | Library                                                    |
+| ------------- | ---------------------------------------------------------- |
+| Framework     | Next.js 16 (App Router, standalone output)                 |
+| Language      | TypeScript 5, strict mode                                  |
+| Styling       | Tailwind CSS v4                                            |
+| Components    | shadcn/ui + Radix UI                                       |
+| Data fetching | TanStack Query v5 (React Query)                            |
+| HTTP client   | Axios                                                      |
+| Auth state    | Zustand v5 with persist middleware                         |
+| Forms         | React Hook Form + Zod v4                                   |
+| Charts        | Recharts v3                                                |
+| Icons         | Lucide React                                               |
+| Toasts        | Sonner                                                     |
+| Realtime      | Socket.IO client                                           |
+| Passkeys      | @simplewebauthn/browser                                    |
 | Token storage | js-cookie (access token) + httpOnly cookie (refresh token) |
 
 ## Project Structure
+
 ```
 src/
   app/
@@ -90,20 +94,24 @@ src/
 ## API Layer (src/lib/api.ts)
 
 ### Axios instance
+
 ```typescript
-import { api } from '@/lib/api'
+import { api } from "@/lib/api";
 ```
+
 - Attaches `Authorization: Bearer <token>` header automatically
 - Auto-refreshes on 401 via interceptor
 - On failed refresh: clears auth, redirects to `/login`
 
 ### Route builders
+
 All API routes are defined as named objects in `api.ts`:
+
 ```typescript
 // Pattern: routeGroup.action(...params) => string
-orgRoutes.get(slug)
-projectRoutes.list(slug, productSlug)
-analyticsRoutes.chart(slug, productSlug, id)
+orgRoutes.get(slug);
+projectRoutes.list(slug, productSlug);
+analyticsRoutes.chart(slug, productSlug, id);
 ```
 
 Never hardcode API paths in hooks or components — always use the route builders.
@@ -114,54 +122,53 @@ a new group following the same pattern.
 ## React Query Hooks (src/hooks/)
 
 ### Pattern — every hook follows this exactly
+
 ```typescript
 // src/hooks/[feature]/use[Feature].ts
-import { api, featureRoutes } from '@/lib/api'
-import { FeatureType } from '@/types'
-import { useQuery } from '@tanstack/react-query'
+import { api, featureRoutes } from "@/lib/api";
+import { FeatureType } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export function useFeature(slug: string, id: string) {
   return useQuery<FeatureType>({
-    queryKey: ['feature', slug, id],
+    queryKey: ["feature", slug, id],
     queryFn: async () => {
-      const res = await api.get(featureRoutes.get(slug, id))
-      return res.data.data
+      const res = await api.get(featureRoutes.get(slug, id));
+      return res.data.data;
     },
     enabled: !!slug && !!id,
-  })
+  });
 }
 ```
 
 ### Mutation pattern
+
 ```typescript
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateFeature(slug: string, id: string) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (body: UpdateFeatureBody) => {
-      const res = await api.patch(featureRoutes.update(slug, id), body)
-      return res.data.data
+      const res = await api.patch(featureRoutes.update(slug, id), body);
+      return res.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feature', slug, id] })
+      queryClient.invalidateQueries({ queryKey: ["feature", slug, id] });
     },
-  })
+  });
 }
 ```
 
 ### Query key conventions
+
 ```typescript
-['organisations']                           // list of all orgs
-['organisation', slug]                      // single org
-['products', slug]                          // products for an org
-['projects', slug, productSlug]             // projects for a product
-['project', slug, productSlug, id]          // single project
-['analytics', slug, productSlug, id]        // project analytics
-['insights', slug, productSlug, id]         // project insights
-['logs', slug, productSlug, id]             // project logs
-['profile']                                 // current user profile
+["organisations"][("organisation", slug)][("products", slug)][ // list of all orgs // single org // products for an org
+  ("projects", slug, productSlug)
+][("project", slug, productSlug, id)][("analytics", slug, productSlug, id)][ // projects for a product // single project // project analytics
+  ("insights", slug, productSlug, id)
+][("logs", slug, productSlug, id)]["profile"]; // project insights // project logs // current user profile
 ```
 
 Always use these exact keys for `invalidateQueries` to work correctly.
@@ -169,23 +176,25 @@ Always use these exact keys for `invalidateQueries` to work correctly.
 ## State Management (Zustand)
 
 ### Auth store
+
 ```typescript
-import { useAuthStore } from '@/store/auth.store'
+import { useAuthStore } from "@/store/auth.store";
 
 // Reading
-const user = useAuthStore(s => s.user)
-const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+const user = useAuthStore((s) => s.user);
+const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
 // Writing
-useAuthStore.getState().setAuth(user, token)   // login
-useAuthStore.getState().updateUser(user)        // profile update
-useAuthStore.getState().clearAuth()             // logout
+useAuthStore.getState().setAuth(user, token); // login
+useAuthStore.getState().updateUser(user); // profile update
+useAuthStore.getState().clearAuth(); // logout
 ```
 
 Access tokens stored in js-cookie (`pb_access_token`).
 Auth state persisted in localStorage (`pb-auth`).
 
 ## URL Structure
+
 ```
 /                           — landing page (not in dashboard layout)
 /login                      — (auth) group
@@ -208,7 +217,7 @@ Auth state persisted in localStorage (`pb-auth`).
 /[slug]/projects/[id]/feedback
 /[slug]/projects/[id]/insights
 /[slug]/projects/[id]/releases
-/[slug]/projects/[id]/settings/details
+/[slug]/projects/[id]/settings/general
 /[slug]/projects/[id]/settings/ai
 /[slug]/projects/[id]/settings/repository
 /[slug]/projects/[id]/settings/security
@@ -225,6 +234,7 @@ NOT inside the `(auth)` group. This is intentional — it handles OAuth redirect
 and must not be wrapped in the auth layout.
 
 ## Page Pattern
+
 ```typescript
 // src/app/(dashboard)/[slug]/page.tsx
 'use client'
@@ -256,10 +266,12 @@ export default function OrgOverviewPage() {
 ## Component Patterns
 
 ### shadcn/ui components
+
 Never edit files in `src/components/ui/` — these are managed by shadcn.
 Always import from `@/components/ui/[component]`.
 
 ### Feature components
+
 ```typescript
 // Functional component, no React.FC
 type Props = {
@@ -278,6 +290,7 @@ export function MyComponent({ title, value }: Props) {
 - Use `cn()` from `@/lib/utils` for conditional classes
 
 ### Styling
+
 ```typescript
 import { cn } from '@/lib/utils'
 
@@ -289,6 +302,7 @@ import { cn } from '@/lib/utils'
 ```
 
 Tailwind v4 with CSS variables for theming:
+
 - `text-brand` — primary brand colour
 - `text-muted-foreground` — secondary text
 - `bg-card` — card background
@@ -297,10 +311,12 @@ Tailwind v4 with CSS variables for theming:
 - `bg-brand/10` — 10% opacity brand (active state background)
 
 ## Types (src/types/index.ts)
+
 All shared types live in one file. Never create type files elsewhere.
 When adding types, add them to the correct section in `types/index.ts`.
 
 Key types:
+
 ```typescript
 User, Organisation, Product, Project
 OrgPlan, WorkspaceMode, MemberRole
@@ -312,14 +328,15 @@ ApiResponse<T>  — { success: boolean; data: T }
 ```
 
 ## Settings Pages Architecture
+
 Settings pages are split — each tab is its own URL and component:
 
 ```
 src/app/(dashboard)/[slug]/settings/general/page.tsx
   → renders <GeneralTab /> from src/components/settings/org/general-tab.tsx
 
-src/app/(dashboard)/[slug]/projects/[id]/settings/details/page.tsx
-  → renders <DetailsTab /> from src/components/settings/project/details-tab.tsx
+src/app/(dashboard)/[slug]/projects/[id]/settings/general/page.tsx
+  → renders <GeneralTab /> from src/components/settings/project/general-tab.tsx
 ```
 
 Pages are thin wrappers (title + tab component).
@@ -327,29 +344,33 @@ All logic lives in the tab component.
 `/settings` redirects to `/settings/general` via `redirect()`.
 
 ## productSlug Resolution
+
 Most project-level hooks and pages need a `productSlug`.
 Always resolve it via the first product:
+
 ```typescript
-const { data: products } = useProducts(slug)
-const productSlug = products?.[0]?.slug ?? ''
+const { data: products } = useProducts(slug);
+const productSlug = products?.[0]?.slug ?? "";
 ```
 
 When `productSlug` is empty string, `enabled: !!productSlug` prevents the
 query from firing — this is intentional and handles loading states gracefully.
 
 ## Naming Conventions
-| Thing | Convention |
-|---|---|
-| Page files | `page.tsx` (Next.js convention) |
-| Layout files | `layout.tsx` |
-| Components | `PascalCase.tsx` |
-| Hooks | `useCamelCase.ts` |
-| Utility functions | `camelCase` |
-| Route builders | `featureRoutes.action()` |
-| Query keys | `['kebab-case', param1, param2]` |
-| CSS classes | Tailwind utility classes only — no custom CSS |
+
+| Thing             | Convention                                    |
+| ----------------- | --------------------------------------------- |
+| Page files        | `page.tsx` (Next.js convention)               |
+| Layout files      | `layout.tsx`                                  |
+| Components        | `PascalCase.tsx`                              |
+| Hooks             | `useCamelCase.ts`                             |
+| Utility functions | `camelCase`                                   |
+| Route builders    | `featureRoutes.action()`                      |
+| Query keys        | `['kebab-case', param1, param2]`              |
+| CSS classes       | Tailwind utility classes only — no custom CSS |
 
 ## Scripts
+
 ```bash
 npm run dev       # next dev --turbopack -p 3001
 npm run build     # next build
@@ -358,13 +379,16 @@ npm run lint      # eslint
 ```
 
 ## Environment Variables
+
 ```
 NEXT_PUBLIC_API_URL   — backend URL (required, throws if missing)
 ```
+
 All env vars prefixed `NEXT_PUBLIC_` are exposed to the browser.
 Never put secrets in `NEXT_PUBLIC_` vars.
 
 ## What Claude Should Never Do
+
 - Edit files in `src/components/ui/` (shadcn managed)
 - Use inline `style={{}}` — always use Tailwind classes
 - Use `React.FC` — use plain function declarations
