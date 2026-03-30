@@ -20,6 +20,7 @@ export * from "./releases";
 export * from "./sessions";
 export * from "./two-factor";
 export * from "./realtime";
+export * from "./documents";
 
 // Standalone hooks
 export * from "./useCooldown";

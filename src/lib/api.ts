@@ -345,3 +345,10 @@ export const insightRoutes = {
   orgInsights: (slug: string) => `/organisations/${slug}/insights`,
   triggerOrg: (slug: string) => `/organisations/${slug}/insights/trigger`,
 };
+
+export const documentRoutes = {
+  list: (slug: string) => `/organisations/${slug}/documents`,
+  upload: (slug: string) => `/organisations/${slug}/documents`,
+  delete: (slug: string, documentId: string) =>
+    `/organisations/${slug}/documents/${documentId}`,
+};

@@ -470,3 +470,25 @@ export type PaginatedActivity<T> = {
   limit: number;
   hasMore: boolean;
 };
+
+// ─── Business Documents ───────────────────────────────────────────────────────
+
+export type DocumentStatus = "processing" | "ready" | "failed";
+
+export type BusinessDocument = {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  status: DocumentStatus;
+  pageCount: number | null;
+  createdAt: string;
+  createdBy: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  _count: {
+    chunks: number;
+  };
+};
