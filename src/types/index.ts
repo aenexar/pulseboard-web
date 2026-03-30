@@ -88,6 +88,7 @@ export type Organisation = {
   workspaceMode: WorkspaceMode;
   createdAt: string;
   updatedAt: string;
+  description: string | null;
   members: OrgMember[];
   _count?: {
     products: number;

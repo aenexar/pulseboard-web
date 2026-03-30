@@ -10,6 +10,7 @@ export function useUpdateOrganisation(slug: string) {
       name?: string;
       slug?: string;
       logoUrl?: string;
+      description?: string;
     }) => {
       const res = await api.patch(orgRoutes.update(slug), data);
       return res.data.data as Organisation;
