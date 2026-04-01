@@ -378,3 +378,10 @@ export const crashRoutes = {
   ) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/crashes/${crashGroupId}/unresolve`,
 };
+
+export const versionRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/versions`,
+  detail: (slug: string, productSlug: string, id: string, appVersion: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/versions/${encodeURIComponent(appVersion)}`,
+};

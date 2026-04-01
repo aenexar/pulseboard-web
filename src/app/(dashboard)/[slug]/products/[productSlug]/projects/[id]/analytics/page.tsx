@@ -302,10 +302,18 @@ export default function AnalyticsPage() {
       {/* Breakdowns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <SectionHeader
-            title="By Version"
-            sub="Crash distribution across app versions"
-          />
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              title="By Version"
+              sub="Crash distribution across app versions"
+            />
+            <Link
+              href={`/${slug}/products/${productSlug}/projects/${id}/analytics/versions`}
+              className="text-sm text-brand hover:underline shrink-0"
+            >
+              View all →
+            </Link>
+          </div>
           <Card>
             <CardContent className="pt-6 space-y-4">
               {crashesByVersion.length === 0 ? (

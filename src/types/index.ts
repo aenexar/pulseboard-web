@@ -519,3 +519,47 @@ export type BusinessDocument = {
     chunks: number;
   };
 };
+
+export type VersionSummary = {
+  appVersion: string;
+  totalSessions: number;
+  crashedSessions: number;
+  crashRate: number;
+  crashes: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type VersionDetail = {
+  appVersion: string;
+  totalSessions: number;
+  crashedSessions: number;
+  crashes: number;
+  crashRate: number;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  topCrashes: {
+    crashGroupId: string | null;
+    errorName: string | null;
+    errorMessage: string | null;
+    occurrences: number;
+  }[];
+  screenPerformance: {
+    screenName: string;
+    views: number;
+    avgLoadTime: number;
+  }[];
+  apiPerformance: {
+    endpoint: string;
+    calls: number;
+    avgDuration: number;
+  }[];
+};
+
+export type PaginatedVersions = {
+  items: VersionSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};
