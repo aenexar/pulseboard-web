@@ -404,3 +404,10 @@ export const screenRoutes = {
   detail: (slug: string, productSlug: string, id: string, screenName: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/screens/${encodeURIComponent(screenName)}`,
 };
+
+export const apiPerformanceRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/api`,
+  detail: (slug: string, productSlug: string, id: string, endpoint: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/api/${encodeURIComponent(endpoint)}`,
+};

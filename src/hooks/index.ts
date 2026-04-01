@@ -25,6 +25,7 @@ export * from "./crashes";
 export * from "./versions";
 export * from "./devices";
 export * from "./screens";
+export * from "./api-performance";
 
 // Standalone hooks
 export * from "./useCooldown";

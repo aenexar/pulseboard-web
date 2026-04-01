@@ -657,3 +657,49 @@ export type PaginatedScreens = {
   limit: number;
   hasMore: boolean;
 };
+
+export type ApiEndpointSummary = {
+  endpoint: string;
+  httpMethod: string;
+  totalCalls: number;
+  failedCalls: number;
+  failureRate: number;
+  avgDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  avgPayload: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type ApiEndpointDetail = {
+  endpoint: string;
+  httpMethod: string;
+  totalCalls: number;
+  failedCalls: number;
+  failureRate: number;
+  avgDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  avgPayload: number;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  byStatusCode: { statusCode: number; calls: number }[];
+  byVersion: { appVersion: string; calls: number; avgDuration: number }[];
+  byDevice: { deviceModel: string; calls: number; avgDuration: number }[];
+  trend: {
+    date: string;
+    label: string;
+    calls: number;
+    failed: number;
+    avgDuration: number;
+  }[];
+};
+
+export type PaginatedApiEndpoints = {
+  items: ApiEndpointSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};
