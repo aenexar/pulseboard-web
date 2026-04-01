@@ -24,6 +24,7 @@ export * from "./documents";
 export * from "./crashes";
 export * from "./versions";
 export * from "./devices";
+export * from "./screens";
 
 // Standalone hooks
 export * from "./useCooldown";

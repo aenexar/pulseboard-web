@@ -397,3 +397,10 @@ export const deviceRoutes = {
   ) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/devices/${encodeURIComponent(deviceModel)}`,
 };
+
+export const screenRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/screens`,
+  detail: (slug: string, productSlug: string, id: string, screenName: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/screens/${encodeURIComponent(screenName)}`,
+};

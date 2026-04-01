@@ -613,3 +613,47 @@ export type PaginatedDevices = {
   limit: number;
   hasMore: boolean;
 };
+
+export type ScreenSummary = {
+  screenName: string;
+  views: number;
+  avgLoadTime: number;
+  avgTimeSpent: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type ScreenDetail = {
+  screenName: string;
+  totalViews: number;
+  avgLoadTime: number;
+  avgTimeSpent: number;
+  minLoadTime: number;
+  maxLoadTime: number;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  byVersion: {
+    appVersion: string;
+    views: number;
+    avgLoadTime: number;
+  }[];
+  byDevice: {
+    deviceModel: string;
+    views: number;
+    avgLoadTime: number;
+  }[];
+  trend: {
+    date: string;
+    label: string;
+    views: number;
+    avgLoad: number;
+  }[];
+};
+
+export type PaginatedScreens = {
+  items: ScreenSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};

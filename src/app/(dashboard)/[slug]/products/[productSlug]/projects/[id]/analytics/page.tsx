@@ -402,10 +402,18 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="space-y-4">
-          <SectionHeader
-            title="Screen Performance"
-            sub="Average load times — slowest first"
-          />
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              title="Screen Performance"
+              sub="Average load times — slowest first"
+            />
+            <Link
+              href={`/${slug}/products/${productSlug}/projects/${id}/analytics/screens`}
+              className="text-sm text-brand hover:underline shrink-0"
+            >
+              View all →
+            </Link>
+          </div>
           <Card>
             <CardContent className="pt-6 space-y-4">
               {screenPerformance.length === 0 ? (
