@@ -352,3 +352,29 @@ export const documentRoutes = {
   delete: (slug: string, documentId: string) =>
     `/organisations/${slug}/documents/${documentId}`,
 };
+
+export const crashRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/crashes`,
+  detail: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    crashGroupId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/crashes/${crashGroupId}`,
+  resolve: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    crashGroupId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/crashes/${crashGroupId}/resolve`,
+  unresolve: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    crashGroupId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/crashes/${crashGroupId}/unresolve`,
+};

@@ -21,6 +21,7 @@ export * from "./sessions";
 export * from "./two-factor";
 export * from "./realtime";
 export * from "./documents";
+export * from "./crashes";
 
 // Standalone hooks
 export * from "./useCooldown";

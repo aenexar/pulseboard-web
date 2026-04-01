@@ -14,6 +14,7 @@ import {
   Smartphone,
   TrendingDown,
 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
 
@@ -221,10 +222,18 @@ export default function AnalyticsPage() {
 
       {/* Top Crashes */}
       <div className="space-y-4">
-        <SectionHeader
-          title="Top Crashes"
-          sub="Most frequently occurring errors — last 30 days"
-        />
+        <div className="flex items-center justify-between">
+          <SectionHeader
+            title="Top Crashes"
+            sub="Most frequently occurring errors — last 30 days"
+          />
+          <Link
+            href={`/${slug}/products/${productSlug}/projects/${id}/analytics/crashes`}
+            className="text-sm text-brand hover:underline shrink-0"
+          >
+            View all →
+          </Link>
+        </div>
         {topCrashes.length === 0 ? (
           <div
             className={cn(

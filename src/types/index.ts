@@ -176,6 +176,33 @@ export type CrashByDevice = {
   crashes: number;
 };
 
+export type CrashEvent = {
+  id: string;
+  timestamp: string;
+  platform: string | null;
+  os: string | null;
+  osVersion: string | null;
+  deviceModel: string | null;
+  appVersion: string | null;
+  isFatal: boolean | null;
+  stackTrace: string | null;
+  errorMessage: string | null;
+  userId: string | null;
+  environment: string | null;
+};
+
+export type CrashGroupDetail = CrashGroup & {
+  events: CrashEvent[];
+};
+
+export type PaginatedCrashGroups = {
+  items: CrashGroup[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};
+
 export type ApiPerformance = {
   endpoint: string;
   calls: number;
