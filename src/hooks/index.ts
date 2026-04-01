@@ -23,6 +23,7 @@ export * from "./realtime";
 export * from "./documents";
 export * from "./crashes";
 export * from "./versions";
+export * from "./devices";
 
 // Standalone hooks
 export * from "./useCooldown";

@@ -563,3 +563,53 @@ export type PaginatedVersions = {
   limit: number;
   hasMore: boolean;
 };
+
+export type DeviceSummary = {
+  deviceModel: string;
+  platform: string;
+  manufacturer: string;
+  totalEvents: number;
+  crashes: number;
+  crashRate: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type DeviceDetail = {
+  deviceModel: string;
+  platform: string;
+  manufacturer: string;
+  os: string;
+  totalEvents: number;
+  crashes: number;
+  crashRate: number;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  osVersions: {
+    osVersion: string;
+    events: number;
+  }[];
+  appVersions: {
+    appVersion: string;
+    events: number;
+  }[];
+  topCrashes: {
+    crashGroupId: string | null;
+    errorName: string | null;
+    errorMessage: string | null;
+    occurrences: number;
+  }[];
+  screenPerformance: {
+    screenName: string;
+    views: number;
+    avgLoadTime: number;
+  }[];
+};
+
+export type PaginatedDevices = {
+  items: DeviceSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};

@@ -385,3 +385,15 @@ export const versionRoutes = {
   detail: (slug: string, productSlug: string, id: string, appVersion: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/versions/${encodeURIComponent(appVersion)}`,
 };
+
+export const deviceRoutes = {
+  list: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/devices`,
+  detail: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    deviceModel: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/devices/${encodeURIComponent(deviceModel)}`,
+};

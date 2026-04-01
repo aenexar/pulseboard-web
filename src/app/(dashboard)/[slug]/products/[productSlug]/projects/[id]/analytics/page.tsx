@@ -336,10 +336,18 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="space-y-4">
-          <SectionHeader
-            title="By Device"
-            sub="Crash distribution across device models"
-          />
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              title="By Device"
+              sub="Crash distribution across device models"
+            />
+            <Link
+              href={`/${slug}/products/${productSlug}/projects/${id}/analytics/devices`}
+              className="text-sm text-brand hover:underline shrink-0"
+            >
+              View all →
+            </Link>
+          </div>
           <Card>
             <CardContent className="pt-6 space-y-4">
               {crashesByDevice.length === 0 ? (
