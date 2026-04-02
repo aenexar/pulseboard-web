@@ -1,14 +1,8 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -16,30 +10,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FeedbackSheet } from "@/components/feedback/feedback-sheet";
 import {
-  useFeedback,
+  useFeedbackBoard,
   useFeedbackStats,
-  useProducts,
   useUpdateFeedbackStatus,
 } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { FeedbackItem, FeedbackStatus, FeedbackType } from "@/types";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Bug,
-  ChevronLeft,
-  ChevronRight,
-  Lightbulb,
-  MessageSquare,
-  User,
-} from "lucide-react";
-import Image from "next/image";
+import { Bug, Lightbulb, MessageSquare, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG = {
+const TYPE_CONFIG: Record<
+  FeedbackType,
+  {
+    label: string;
+    icon: React.ElementType;
+    color: string;
+    bg: string;
+  }
+> = {
   bug: {
     label: "Bug",
     icon: Bug,
@@ -60,166 +54,130 @@ const TYPE_CONFIG = {
   },
 };
 
-const STATUS_CONFIG = {
-  open: {
+const COLUMNS: {
+  status: FeedbackStatus;
+  label: string;
+  color: string;
+  border: string;
+}[] = [
+  {
+    status: "open",
     label: "Open",
-    className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-600",
+    color: "text-yellow-500",
+    border: "border-yellow-500/30",
   },
-  in_progress: {
+  {
+    status: "in_progress",
     label: "In Progress",
-    className: "border-blue-500/30 bg-blue-500/10 text-blue-500",
+    color: "text-blue-500",
+    border: "border-blue-500/30",
   },
-  resolved: {
+  {
+    status: "resolved",
     label: "Resolved",
-    className: "border-brand/30 bg-brand/10 text-brand",
+    color: "text-brand",
+    border: "border-brand/30",
   },
-  dismissed: {
+  {
+    status: "dismissed",
     label: "Dismissed",
-    className: "border-border bg-muted text-muted-foreground",
+    color: "text-muted-foreground",
+    border: "border-border",
   },
-};
+];
 
-// ─── Feedback Card ────────────────────────────────────────────────────────────
+// ─── Kanban card ──────────────────────────────────────────────────────────────
 
-function FeedbackCard({
+function KanbanCard({
   item,
+  onClick,
   slug,
   productSlug,
   projectId,
 }: {
-  item: {
-    id: string;
-    type: keyof typeof TYPE_CONFIG;
-    status: keyof typeof STATUS_CONFIG;
-    message: string;
-    userEmail: string | null;
-    userName: string | null;
-    appVersion: string | null;
-    screenshotUrl: string | null;
-    createdAt: string;
-  };
+  item: FeedbackItem;
+  onClick: () => void;
   slug: string;
   productSlug: string;
   projectId: string;
 }) {
-  const typeConfig = TYPE_CONFIG[item.type];
-  const statusConfig = STATUS_CONFIG[item.status];
-  const TypeIcon = typeConfig.icon;
+  const typeConf = TYPE_CONFIG[item.type];
+  const TypeIcon = typeConf.icon;
   const updateStatus = useUpdateFeedbackStatus(slug, productSlug, projectId);
 
-  const [screenshotOpen, setScreenshotOpen] = useState(false);
-
   return (
-    <>
-      <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-card">
-        {/* Type icon */}
+    <Card
+      className="p-3 cursor-pointer hover:border-brand/30 transition-colors space-y-2.5"
+      onClick={onClick}
+    >
+      {/* Type + time */}
+      <div className="flex items-center justify-between gap-2">
         <div
           className={cn(
-            "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-            typeConfig.bg,
+            "flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium",
+            typeConf.bg,
+            typeConf.color,
           )}
         >
-          <TypeIcon className={cn("w-4 h-4", typeConfig.color)} />
+          <TypeIcon className="w-3 h-3" />
+          {typeConf.label}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <p className="text-sm text-foreground leading-snug">
-              {item.message}
-            </p>
-            <Badge
-              variant="outline"
-              className={cn("text-xs shrink-0", statusConfig.className)}
-            >
-              {statusConfig.label}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* User */}
-            {(item.userName || item.userEmail) && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <User className="w-3 h-3" />
-                {item.userName ?? item.userEmail}
-              </div>
-            )}
-
-            {/* Version */}
-            {item.appVersion && (
-              <span className="text-xs text-muted-foreground">
-                v{item.appVersion}
-              </span>
-            )}
-
-            {/* Type badge */}
-            <Badge
-              variant="outline"
-              className={cn("text-xs", typeConfig.color)}
-            >
-              {typeConfig.label}
-            </Badge>
-
-            {/* Time */}
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(item.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
-
-            {/* Screenshot */}
-            {item.screenshotUrl && (
-              <button
-                onClick={() => setScreenshotOpen(true)}
-                className="text-xs text-brand hover:underline"
-              >
-                View screenshot
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Status control */}
-        <Select
-          value={item.status}
-          onValueChange={(status) =>
-            updateStatus.mutate({
-              feedbackId: item.id,
-              status: status as keyof typeof STATUS_CONFIG,
-            })
-          }
-        >
-          <SelectTrigger className="h-8 w-32 text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
-            <SelectItem value="dismissed">Dismissed</SelectItem>
-          </SelectContent>
-        </Select>
+        <span className="text-[10px] text-muted-foreground">
+          {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+        </span>
       </div>
 
-      {/* Screenshot dialog */}
-      {item.screenshotUrl && (
-        <Dialog open={screenshotOpen} onOpenChange={setScreenshotOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Screenshot</DialogTitle>
-            </DialogHeader>
-            <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden border border-border">
-              <Image
-                src={item.screenshotUrl}
-                alt="Feedback screenshot"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+      {/* Message */}
+      <p className="text-sm text-foreground line-clamp-3 leading-relaxed">
+        {item.message}
+      </p>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+          <User className="w-3 h-3 shrink-0" />
+          <span className="truncate">
+            {item.userName ?? item.userEmail ?? "Anonymous"}
+          </span>
+        </div>
+        {item.appVersion && (
+          <span className="text-[10px] text-muted-foreground shrink-0">
+            v{item.appVersion}
+          </span>
+        )}
+      </div>
+
+      {/* Note indicator */}
+      {item.note && (
+        <div className="text-[10px] text-brand border border-brand/20 bg-brand/5 rounded px-2 py-1 truncate">
+          📝 {item.note}
+        </div>
       )}
-    </>
+
+      {/* Move to column */}
+      <Select
+        value={item.status}
+        onValueChange={(v) => {
+          updateStatus.mutate({
+            feedbackId: item.id,
+            status: v as FeedbackStatus,
+          });
+        }}
+      >
+        <SelectTrigger
+          className="h-7 text-xs w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent onClick={(e) => e.stopPropagation()}>
+          <SelectItem value="open">Open</SelectItem>
+          <SelectItem value="in_progress">In Progress</SelectItem>
+          <SelectItem value="resolved">Resolved</SelectItem>
+          <SelectItem value="dismissed">Dismissed</SelectItem>
+        </SelectContent>
+      </Select>
+    </Card>
   );
 }
 
@@ -228,219 +186,147 @@ function FeedbackCard({
 export default function FeedbackPage() {
   const params = useParams();
   const slug = params?.slug as string;
-  const id = params?.id as string;
+  const projectId = params?.id as string;
+  const productSlug = params?.productSlug as string;
 
-  const { data: products } = useProducts(slug);
-  const productSlug = products?.[0]?.slug ?? "";
+  const [typeFilter, setTypeFilter] = useState<string>("");
+  const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
-  const [page, setPage] = useState(1);
+  const { data: board, isLoading } = useFeedbackBoard(
+    slug,
+    productSlug,
+    projectId,
+    typeFilter || undefined,
+  );
+  const { data: stats } = useFeedbackStats(slug, productSlug, projectId);
 
-  const { data: stats } = useFeedbackStats(slug, productSlug, id);
-  const { data, isLoading } = useFeedback(slug, productSlug, id, {
-    type: type || undefined,
-    status: status || undefined,
-    page,
-  });
-
-  if (!productSlug) return <Skeleton className="h-96" />;
+  const openSheet = (item: FeedbackItem) => {
+    setSelectedItem(item);
+    setSheetOpen(true);
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Feedback</h1>
-        <p className="text-muted-foreground mt-1">
-          User feedback and bug reports from your app
-        </p>
-      </div>
-
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4">
-          {/* By type */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-3">By Type</p>
-              <div className="space-y-2">
-                {(
-                  Object.entries(TYPE_CONFIG) as [
-                    keyof typeof TYPE_CONFIG,
-                    (typeof TYPE_CONFIG)[keyof typeof TYPE_CONFIG],
-                  ][]
-                ).map(([key, config]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setType(key);
-                      setPage(1);
-                    }}
-                    className="flex items-center justify-between w-full hover:opacity-80 transition-opacity"
-                  >
-                    <div className="flex items-center gap-2">
-                      <config.icon
-                        className={cn("w-3.5 h-3.5", config.color)}
-                      />
-                      <span className="text-sm text-foreground">
-                        {config.label}
-                      </span>
-                    </div>
-                    <span className={cn("text-sm font-semibold", config.color)}>
-                      {stats.byType[key]}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* By status */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-3">By Status</p>
-              <div className="space-y-2">
-                {(
-                  Object.entries(STATUS_CONFIG) as [
-                    keyof typeof STATUS_CONFIG,
-                    (typeof STATUS_CONFIG)[keyof typeof STATUS_CONFIG],
-                  ][]
-                ).map(([key, config]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setStatus(key);
-                      setPage(1);
-                    }}
-                    className="flex items-center justify-between w-full hover:opacity-80 transition-opacity"
-                  >
-                    <span className="text-sm text-foreground">
-                      {config.label}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", config.className)}
-                    >
-                      {stats.byStatus[key]}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Feedback</h1>
+          <p className="text-muted-foreground mt-1">
+            User feedback and bug reports from your app
+          </p>
         </div>
-      )}
 
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <Select
-          value={type || "all"}
-          onValueChange={(v) => {
-            setType(v === "all" ? "" : v);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="bug">Bug</SelectItem>
-            <SelectItem value="feature">Feature</SelectItem>
-            <SelectItem value="general">General</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Stats + filter */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {stats && (
+            <div className="flex items-center gap-2">
+              {(
+                Object.entries(TYPE_CONFIG) as [
+                  FeedbackType,
+                  (typeof TYPE_CONFIG)[FeedbackType],
+                ][]
+              ).map(([key, conf]) => (
+                <button
+                  key={key}
+                  onClick={() => setTypeFilter(typeFilter === key ? "" : key)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    typeFilter === key
+                      ? `${conf.bg} ${conf.color}`
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                  )}
+                >
+                  <conf.icon className="w-3 h-3" />
+                  {conf.label}
+                  <span className="opacity-70">{stats.byType[key]}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
-        <Select
-          value={status || "all"}
-          onValueChange={(v) => {
-            setStatus(v === "all" ? "" : v);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
-            <SelectItem value="dismissed">Dismissed</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {(type || status) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setType("");
-              setStatus("");
-              setPage(1);
-            }}
-          >
-            Clear filters
-          </Button>
-        )}
+          {typeFilter && (
+            <button
+              onClick={() => setTypeFilter("")}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* List */}
-      {isLoading && (
-        <div className="space-y-3">
+      {/* Kanban board */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-6 w-24" />
+              {[...Array(3)].map((_, j) => (
+                <Skeleton key={j} className="h-28" />
+              ))}
+            </div>
           ))}
         </div>
-      )}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
+          {COLUMNS.map((col) => {
+            const items = board?.[col.status] ?? [];
+            return (
+              <div key={col.status} className="space-y-3">
+                {/* Column header */}
+                <div
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2 rounded-lg border",
+                    col.border,
+                    "bg-card",
+                  )}
+                >
+                  <span className={cn("text-sm font-semibold", col.color)}>
+                    {col.label}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={cn("text-xs", col.color, col.border)}
+                  >
+                    {items.length}
+                  </Badge>
+                </div>
 
-      {!isLoading && data?.items.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <MessageSquare className="w-10 h-10 text-muted-foreground/30" />
-          <p className="text-sm text-muted-foreground">No feedback yet</p>
+                {/* Cards */}
+                <div className="space-y-2.5">
+                  {items.length === 0 ? (
+                    <div className="flex items-center justify-center py-8 border border-dashed border-border rounded-lg">
+                      <p className="text-xs text-muted-foreground">No items</p>
+                    </div>
+                  ) : (
+                    items.map((item) => (
+                      <KanbanCard
+                        key={item.id}
+                        item={item}
+                        onClick={() => openSheet(item)}
+                        slug={slug}
+                        productSlug={productSlug}
+                        projectId={projectId}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {!isLoading && (
-        <div className="space-y-3">
-          {data?.items.map((item) => (
-            <FeedbackCard
-              key={item.id}
-              item={item}
-              slug={slug}
-              productSlug={productSlug}
-              projectId={id}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {data && (data.hasMore || page > 1) && (
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => p - 1)}
-            disabled={page === 1}
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {page} · {data.total} total
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!data.hasMore}
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
-      )}
+      {/* Detail sheet */}
+      <FeedbackSheet
+        item={selectedItem}
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        slug={slug}
+        productSlug={productSlug}
+        projectId={projectId}
+      />
     </div>
   );
 }

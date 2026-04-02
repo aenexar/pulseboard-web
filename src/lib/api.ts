@@ -304,6 +304,12 @@ export const feedbackRoutes = {
     feedbackId: string,
   ) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
+  get: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}`,
+  status: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
+  note: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/note`,
 };
 
 export const releaseRoutes = {

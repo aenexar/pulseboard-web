@@ -1,8 +1,7 @@
 import { api, feedbackRoutes } from "@/lib/api";
-import { FeedbackStatus } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useUpdateFeedbackStatus(
+export function useAddFeedbackNote(
   slug: string,
   productSlug: string,
   projectId: string,
@@ -12,22 +11,20 @@ export function useUpdateFeedbackStatus(
   return useMutation({
     mutationFn: async ({
       feedbackId,
-      status,
+      note,
     }: {
       feedbackId: string;
-      status: FeedbackStatus;
+      note: string;
     }) => {
-      await api.patch(
-        feedbackRoutes.status(slug, productSlug, projectId, feedbackId),
-        { status },
+      const res = await api.patch(
+        feedbackRoutes.note(slug, productSlug, projectId, feedbackId),
+        { note },
       );
+      return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["feedback-board", slug, productSlug, projectId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["feedback-stats", slug, productSlug, projectId],
       });
     },
   });

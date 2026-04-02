@@ -703,3 +703,34 @@ export type PaginatedApiEndpoints = {
   limit: number;
   hasMore: boolean;
 };
+
+export type FeedbackStatus = "open" | "in_progress" | "resolved" | "dismissed";
+export type FeedbackType = "bug" | "feature" | "general";
+
+export type FeedbackItem = {
+  id: string;
+  type: FeedbackType;
+  status: FeedbackStatus;
+  message: string;
+  note: string | null;
+  userEmail: string | null;
+  userName: string | null;
+  appVersion: string | null;
+  screenshotUrl: string | null;
+  sessionId: string | null;
+  createdAt: string;
+};
+
+export type FeedbackStats = {
+  byType: {
+    bug: number;
+    feature: number;
+    general: number;
+  };
+  byStatus: {
+    open: number;
+    in_progress: number;
+    resolved: number;
+    dismissed: number;
+  };
+};
