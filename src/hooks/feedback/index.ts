@@ -3,3 +3,7 @@ export * from "./useFeedbackStats";
 export * from "./useUpdateFeedbackStatus";
 export * from "./useAddFeedbackNote";
 export * from "./useFeedbackBoard";
+export * from "./useAddComment";
+export * from "./useAssignFeedback";
+export * from "./useFeedbackDetail";
+export * from "./useProjectMembers";

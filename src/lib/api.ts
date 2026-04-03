@@ -295,21 +295,33 @@ export const logRoutes = {
 export const feedbackRoutes = {
   list: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback`,
+  get: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}`,
   stats: (slug: string, productSlug: string, id: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/stats`,
-  updateStatus: (
+  members: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/members`,
+  status: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
+  note: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/note`,
+  assign: (slug: string, productSlug: string, id: string, feedbackId: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/assign`,
+  comments: (
     slug: string,
     productSlug: string,
     id: string,
     feedbackId: string,
   ) =>
-    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
-  get: (slug: string, productSlug: string, id: string, feedbackId: string) =>
-    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}`,
-  status: (slug: string, productSlug: string, id: string, feedbackId: string) =>
-    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/status`,
-  note: (slug: string, productSlug: string, id: string, feedbackId: string) =>
-    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/note`,
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/comments`,
+  deleteComment: (
+    slug: string,
+    productSlug: string,
+    id: string,
+    feedbackId: string,
+    commentId: string,
+  ) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/feedback/${feedbackId}/comments/${commentId}`,
 };
 
 export const releaseRoutes = {

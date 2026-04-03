@@ -734,3 +734,43 @@ export type FeedbackStats = {
     dismissed: number;
   };
 };
+
+export type FeedbackComment = {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+};
+
+export type FeedbackActivityItem = {
+  id: string;
+  action: "viewed" | "commented" | "status_changed" | "note_added" | "assigned";
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null;
+};
+
+export type FeedbackItemDetail = FeedbackItem & {
+  assignee: { id: string; name: string; avatarUrl: string | null } | null;
+  comments: FeedbackComment[];
+  activities: FeedbackActivityItem[];
+};
+
+export type ProjectMember = {
+  id: string;
+  role: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+};

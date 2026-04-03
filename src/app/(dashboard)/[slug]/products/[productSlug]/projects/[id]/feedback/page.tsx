@@ -190,7 +190,7 @@ export default function FeedbackPage() {
   const productSlug = params?.productSlug as string;
 
   const [typeFilter, setTypeFilter] = useState<string>("");
-  const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const { data: board, isLoading } = useFeedbackBoard(
@@ -201,8 +201,8 @@ export default function FeedbackPage() {
   );
   const { data: stats } = useFeedbackStats(slug, productSlug, projectId);
 
-  const openSheet = (item: FeedbackItem) => {
-    setSelectedItem(item);
+  const openSheet = (id: string) => {
+    setSelectedId(id);
     setSheetOpen(true);
   };
 
@@ -304,7 +304,7 @@ export default function FeedbackPage() {
                       <KanbanCard
                         key={item.id}
                         item={item}
-                        onClick={() => openSheet(item)}
+                        onClick={() => openSheet(item.id)}
                         slug={slug}
                         productSlug={productSlug}
                         projectId={projectId}
@@ -320,9 +320,12 @@ export default function FeedbackPage() {
 
       {/* Detail sheet */}
       <FeedbackSheet
-        item={selectedItem}
+        feedbackId={selectedId}
         open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
+        onClose={() => {
+          setSheetOpen(false);
+          setSelectedId(null);
+        }}
         slug={slug}
         productSlug={productSlug}
         projectId={projectId}
