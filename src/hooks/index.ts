@@ -26,6 +26,7 @@ export * from "./versions";
 export * from "./devices";
 export * from "./screens";
 export * from "./api-performance";
+export * from "./ai-activity";
 
 // Standalone hooks
 export * from "./useCooldown";

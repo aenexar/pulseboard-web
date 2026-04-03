@@ -10,7 +10,9 @@ import { useAuthStore } from "@/store/auth.store";
 import { Framework } from "@/types";
 import {
   Activity,
+  ActivityIcon,
   BarChart2,
+  Bot,
   ChevronDown,
   ChevronRight,
   FolderKanban,
@@ -441,6 +443,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           label="AI Insights"
           icon={Lightbulb}
           active={pathname.startsWith(`/${slug}/insights`)}
+          onClick={onNavigate}
+        />
+        <NavLink
+          href={`/${slug}/ai`}
+          label="AI Activity"
+          icon={Bot}
+          active={pathname.startsWith(`/${slug}/ai`)}
           onClick={onNavigate}
         />
         <NavLink

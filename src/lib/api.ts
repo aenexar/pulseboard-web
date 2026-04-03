@@ -429,3 +429,9 @@ export const apiPerformanceRoutes = {
   detail: (slug: string, productSlug: string, id: string, endpoint: string) =>
     `/organisations/${slug}/products/${productSlug}/projects/${id}/analytics/api/${encodeURIComponent(endpoint)}`,
 };
+
+export const aiActivityRoutes = {
+  list: (slug: string) => `/organisations/${slug}/ai`,
+  businessImpact: (slug: string, productSlug: string, id: string) =>
+    `/organisations/${slug}/products/${productSlug}/projects/${id}/business-impact`,
+};

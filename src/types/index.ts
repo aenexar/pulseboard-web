@@ -774,3 +774,49 @@ export type ProjectMember = {
     avatarUrl: string | null;
   };
 };
+
+export type AIActivity = {
+  id: string;
+  action: string;
+  provider: string;
+  model: string;
+  tokensUsed: number | null;
+  estimatedCost: number | null;
+  durationMs: number | null;
+  status: "success" | "failed";
+  error: string | null;
+  createdAt: string;
+  triggeredBy: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null;
+};
+
+export type AIActivityResponse = {
+  items: AIActivity[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  totals: {
+    calls: number;
+    tokensUsed: number;
+    estimatedCost: number;
+  };
+};
+
+export type BusinessImpactReport = {
+  projectId: string;
+  projectName: string;
+  periodDays: number;
+  totalSessions: number;
+  crashedSessions: number;
+  crashRate: number;
+  estimatedLostSessions: number;
+  estimatedRevenueLoss: number;
+  comparisonCrashRate?: number;
+  trend?: "improving" | "worsening" | "stable";
+  sessionValueUsd: number;
+  generatedAt: string;
+};

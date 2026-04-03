@@ -1,5 +1,6 @@
 "use client";
 
+import { BusinessImpactWidget } from "@/components/dashboard/business-impact-widget";
 import { EnvironmentSwitcher } from "@/components/dashboard/environment-switcher";
 import { EventsFeed } from "@/components/dashboard/events-feed";
 import { StatsCard } from "@/components/dashboard/stats-card";
@@ -369,6 +370,13 @@ export default function ProjectPage() {
           </div>
         )
       )}
+
+      {/* Business Impact */}
+      <BusinessImpactWidget
+        slug={slug}
+        productSlug={productSlug}
+        projectId={projectId}
+      />
 
       {/* Charts */}
       {chartLoading ? (
