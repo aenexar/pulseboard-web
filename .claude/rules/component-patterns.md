@@ -1,6 +1,7 @@
 # Component Patterns
 
 ## Function Declaration Style
+
 ```typescript
 // ✅ Correct — plain function
 export function StatsCard({ title, value }: Props) {
@@ -14,6 +15,7 @@ export const StatsCard: React.FC<Props> = ({ title, value }) => {
 ```
 
 ## Props Type
+
 ```typescript
 // ✅ Correct — explicit type above the function
 type Props = {
@@ -32,6 +34,7 @@ export function MyComponent({ title, value }: { title: string; value: number }) 
 ```
 
 ## Exports
+
 ```typescript
 // ✅ Named export — components
 export function FeatureCard() { ... }
@@ -45,6 +48,7 @@ export default function FeatureCard() { ... }
 ```
 
 ## Styling
+
 ```typescript
 import { cn } from '@/lib/utils'
 
@@ -60,6 +64,7 @@ import { cn } from '@/lib/utils'
 ```
 
 ## Data Fetching in Components
+
 ```typescript
 // ✅ Correct — use React Query hook
 export function ProjectCard({ slug, productSlug, id }: Props) {
@@ -78,7 +83,9 @@ export function ProjectCard({ id }: Props) {
 ```
 
 ## Loading States
+
 Always show `<Skeleton />` while data loads — never show empty content:
+
 ```typescript
 if (isLoading) {
   return (
@@ -91,7 +98,9 @@ if (isLoading) {
 ```
 
 ## Empty States
+
 Always handle the empty data case explicitly:
+
 ```typescript
 if (!data || data.length === 0) {
   return (
@@ -105,11 +114,12 @@ if (!data || data.length === 0) {
 ```
 
 ## shadcn/ui Usage
+
 ```typescript
 // ✅ Always import from @/components/ui/
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 // To add a new shadcn component:
 // npx shadcn add [component-name]
@@ -117,7 +127,9 @@ import { Badge } from '@/components/ui/badge'
 ```
 
 ## Icons
+
 Always use Lucide React:
+
 ```typescript
 import { Settings, ChevronRight, AlertTriangle } from 'lucide-react'
 
@@ -128,6 +140,7 @@ import { Settings, ChevronRight, AlertTriangle } from 'lucide-react'
 ```
 
 ## Colour Conventions
+
 ```
 text-foreground         — primary text
 text-muted-foreground   — secondary/hint text

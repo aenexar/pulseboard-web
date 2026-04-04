@@ -3,6 +3,7 @@
 Scaffold a new reusable component.
 
 ## Usage
+
 ```
 /component <ComponentName> — <brief description>
 ```
@@ -39,6 +40,7 @@ export function ComponentName({ prop1, prop2 }: Props) {
 4. If the component has complex logic, extract it into a custom hook
 
 ## Checklist
+
 - [ ] Named export (not default)
 - [ ] No `React.FC`
 - [ ] No inline `style={{}}`

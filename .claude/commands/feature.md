@@ -3,11 +3,13 @@
 Scaffold a complete new frontend feature end-to-end.
 
 ## Usage
+
 ```
 /feature <name> — <brief description>
 ```
 
 ## Example
+
 ```
 /feature environment-switcher — add per-project environment selector
 ```
@@ -22,6 +24,7 @@ Scaffold a complete new frontend feature end-to-end.
 5. **Types** — add any new types to `src/types/index.ts`
 
 6. **API routes** — add route builders to `src/lib/api.ts`
+
    ```typescript
    export const featureRoutes = {
      list: (slug: string, id: string) => `/organisations/${slug}/.../${id}/feature`,
@@ -53,6 +56,7 @@ Scaffold a complete new frontend feature end-to-end.
 11. Print summary table of all files created
 
 ## Rules
+
 - Never fetch data directly — always use React Query hooks
 - Never use `useEffect` to fetch data
 - Never hardcode API paths — use route builders

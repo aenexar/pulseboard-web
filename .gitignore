@@ -55,5 +55,5 @@ next-env.d.ts
 .idea/
 
 # Claude
-CLAUDE.local.md
+.claude/CLAUDE.local.md
 .claude/settings.local.json

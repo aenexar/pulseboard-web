@@ -3,6 +3,7 @@
 Scaffold a new React Query hook.
 
 ## Usage
+
 ```
 /hook <hookName> — <brief description>
 ```
@@ -16,10 +17,11 @@ Scaffold a new React Query hook.
 4. Re-export from `src/hooks/index.ts`
 
 ## Query Hook Template
+
 ```typescript
-import { api, featureRoutes } from '@/lib/api'
-import { FeatureType } from '@/types'
-import { useQuery } from '@tanstack/react-query'
+import { api, featureRoutes } from "@/lib/api";
+import { FeatureType } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export function useFeature(
   slug: string,
@@ -27,52 +29,54 @@ export function useFeature(
   projectId: string,
 ) {
   return useQuery<FeatureType>({
-    queryKey: ['feature', slug, productSlug, projectId],
+    queryKey: ["feature", slug, productSlug, projectId],
     queryFn: async () => {
       const res = await api.get(
-        featureRoutes.get(slug, productSlug, projectId)
-      )
-      return res.data.data
+        featureRoutes.get(slug, productSlug, projectId),
+      );
+      return res.data.data;
     },
     enabled: !!slug && !!productSlug && !!projectId,
-  })
+  });
 }
 ```
 
 ## Mutation Hook Template
+
 ```typescript
-import { api, featureRoutes } from '@/lib/api'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { api, featureRoutes } from "@/lib/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type CreateFeatureBody = {
-  name: string
-}
+  name: string;
+};
 
 export function useCreateFeature(
   slug: string,
   productSlug: string,
   projectId: string,
 ) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (body: CreateFeatureBody) => {
       const res = await api.post(
         featureRoutes.create(slug, productSlug, projectId),
         body,
-      )
-      return res.data.data
+      );
+      return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['feature', slug, productSlug, projectId],
-      })
+        queryKey: ["feature", slug, productSlug, projectId],
+      });
     },
-  })
+  });
 }
 ```
 
 ## Checklist
+
 - [ ] `enabled` guard on all params that could be empty string
 - [ ] Query key matches the convention in CLAUDE.md
 - [ ] `invalidateQueries` called on mutation success

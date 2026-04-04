@@ -3,6 +3,7 @@
 Auto-invoked when creating a new dashboard page.
 
 ## Standard Page Template
+
 ```typescript
 'use client'
 
@@ -46,6 +47,7 @@ export default function FeaturePage() {
 ```
 
 ## Settings Page Template (thin wrapper)
+
 ```typescript
 'use client'
 
@@ -79,19 +81,21 @@ export default function ProjectSettingsFeaturePage() {
 ```
 
 ## Redirect Page Template
+
 ```typescript
-import { redirect } from 'next/navigation'
+import { redirect } from "next/navigation";
 
 export default function SettingsRedirect({
   params,
 }: {
-  params: { slug: string }
+  params: { slug: string };
 }) {
-  redirect(`/${params.slug}/settings/general`)
+  redirect(`/${params.slug}/settings/general`);
 }
 ```
 
 ## Checklist
+
 - [ ] `'use client'` at top (for all dashboard pages)
 - [ ] `useParams()` used, not props
 - [ ] `productSlug` resolved via `useProducts`

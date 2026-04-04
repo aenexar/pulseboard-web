@@ -3,11 +3,13 @@
 Scaffold a new dashboard page.
 
 ## Usage
+
 ```
 /page <route> — <brief description>
 ```
 
 ## Example
+
 ```
 /page [slug]/projects/[id]/environments — environment switcher page
 ```
@@ -16,14 +18,16 @@ Scaffold a new dashboard page.
 
 1. Create the page file: `src/app/(dashboard)/[route]/page.tsx`
 2. If the route needs a redirect (e.g. `/settings` → `/settings/general`), use:
+
 ```typescript
-import { redirect } from 'next/navigation'
+import { redirect } from "next/navigation";
 export default function PageRedirect({ params }: { params: { slug: string } }) {
-  redirect(`/${params.slug}/settings/general`)
+  redirect(`/${params.slug}/settings/general`);
 }
 ```
 
 3. Standard page template:
+
 ```typescript
 'use client'
 
@@ -66,6 +70,7 @@ export default function FeaturePage() {
 4. Add to sidebar if navigation is needed (`src/components/layout/sidebar.tsx`)
 
 ## Checklist
+
 - [ ] `'use client'` at the top
 - [ ] Params read with `useParams()` and cast: `params?.slug as string`
 - [ ] `productSlug` resolved via `useProducts(slug)?.[0]?.slug ?? ''`
